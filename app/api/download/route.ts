@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
     const title = formData.get('title') as string;
     const source = formData.get('source') as 'youtube' | 'soundcloud';
 
-
     if (!url || !playlistId || !title || !source) {
       return NextResponse.json({ error: 'Données manquantes' }, { status: 400 });
     }
@@ -37,7 +36,6 @@ export async function POST(request: NextRequest) {
     const command = `yt-dlp -x --audio-format mp3 -o "${outputPath}" "${url}"`;
 
     try {
-      // Récupérer les métadonnées avec yt-dlp
       await execAsync(command);
     } catch (error) {
       console.error('Erreur yt-dlp:', error);
@@ -53,12 +51,10 @@ export async function POST(request: NextRequest) {
       filename,
       source,
       createdAt: new Date(),
-      url: url,
     };
 
     const updatedTracks = [...playlist.tracks, newTrack];
-    playlist.tracks = updatedTracks;
-    await updatePlaylist(playlistId,playlist);
+    await updatePlaylist(playlistId, { tracks: updatedTracks });
 
     return NextResponse.json({ success: true, track: newTrack }, { status: 201 });
   } catch (error) {

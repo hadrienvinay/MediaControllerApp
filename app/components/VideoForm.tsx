@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { init } from 'next/dist/compiled/webpack/webpack';
+import Image from 'next/image';
 
 type Media = { title: string; type: string; source: string; url?: string ; filename?: string, file?: File};
 
@@ -36,8 +37,10 @@ export default function VideoForm({ initialData, mode }: VideoFormProps) {
   const [imageDuration, setImageDuration] = useState(5);
   const [resolution, setResolution] = useState<'720p' | '1080p' | '4k'>('1080p');
   const [includeAudio, setIncludeAudio] = useState(true);
-  
+  const [loadedFile, setLoadedFile] = useState(false)  
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  console.log(media)
 
   const addMedia = (type: 'video' | 'image', source: 'upload' | 'youtube' | 'url') => {
     setMedia([...media, { title: '', type, source }]);
@@ -49,6 +52,10 @@ export default function VideoForm({ initialData, mode }: VideoFormProps) {
 
   const updateMedia = (index: number, field: string, value: any) => {
     const newMedia = [...media];
+    if (field === 'file'){
+      setLoadedFile(true);
+
+    }
     newMedia[index] = { ...newMedia[index], [field]: value };
     setMedia(newMedia);
   };
@@ -67,6 +74,7 @@ export default function VideoForm({ initialData, mode }: VideoFormProps) {
         body: JSON.stringify({
           name: projectName,
           description,
+          media: media,
           settings: {
             transitionDuration,
             transitionType,
@@ -78,19 +86,19 @@ export default function VideoForm({ initialData, mode }: VideoFormProps) {
       });
 
       if (!projectResponse.ok) {
-        throw new Error('Erreur lors de la création du projet');
+        throw new Error(mode === 'create' ? "Erreur lors de la création du projet" : "Erreur lors de la modification du projet");
       }
 
       const project = await projectResponse.json();
 
       // Uploader chaque média
       for (const item of media) {
-        const formData = new FormData();
-        formData.append('projectId', project.id);
-        formData.append('title', item.title);
-        formData.append('type', item.type);
         //if file already uploaded (in edit mode), skip upload and just link it to the project
         if (!item.filename) {
+            const formData = new FormData();
+            formData.append('projectId', project.id);
+            formData.append('title', item.title);
+            formData.append('type', item.type);
             formData.append('source', item.source);
             if (item.source === 'upload' && item.file) {
             formData.append('file', item.file);
@@ -290,9 +298,18 @@ export default function VideoForm({ initialData, mode }: VideoFormProps) {
                       </div>
 
                       {item.filename ? (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Fichier déja chargé
-                      </p>
+                        <div className='flex'>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Fichier déja chargé
+                          </p>
+                          <Image 
+                          src={`/images/${item.filename}`} 
+                            width={299}
+                            height={299}
+                            alt="image"
+                            className="ml-50 flex rounded"
+                            />
+                        </div>
                     ) :
                       item.source === 'upload' ? (
                         <input

@@ -2,25 +2,29 @@
 
 Une application Next.js full-stack pour créer et gérer des **playlists audio** et des **projets vidéo** avec transitions professionnelles.
 
-## Fonctionnalités
+## ✨ Fonctionnalités
 
 ### 🎵 Audio (Playlists)
--  **Upload de fichiers MP3** : Ajoutez vos fichiers audio locaux
--  **YouTube** : Téléchargez l'audio de vidéos YouTube
--  **SoundCloud** : Importez des pistes depuis SoundCloud
--  **Playlists personnalisées** : Créez et organisez vos playlists
--  **Mixage automatique** : Fusionnez vos titres avec des transitions douces (crossfade de 3 secondes)
--  **Lecteur audio intégré** : Écoutez directement vos playlists mixées
+- 📁 **Upload de fichiers MP3** : Ajoutez vos fichiers audio locaux
+- ▶️ **YouTube** : Téléchargez l'audio de vidéos YouTube
+- ☁️ **SoundCloud** : Importez des pistes depuis SoundCloud
+- 🎵 **Playlists personnalisées** : Créez et organisez vos playlists
+- 🎛️ **Mixage automatique** : Fusionnez vos titres avec des transitions douces (crossfade de 3 secondes)
+- 🎧 **Lecteur audio intégré** : Écoutez directement vos playlists mixées
+- ✏️ **Édition complète** : Modifiez, réorganisez, ajoutez/supprimez des titres
+- 🗑️ **Suppression** : Supprimez des playlists
 
 ### 🎬 Vidéo (Projets)
--  **Upload de vidéos** : Importez vos vidéos locales (MP4, AVI, MOV, etc.)
--  **YouTube** : Téléchargez des vidéos depuis YouTube
--  **Images** : Ajoutez des photos pour créer des diaporamas
--  **Transitions professionnelles** : Fade, Dissolve, Wipe, Slide
--  **Compilation automatique** : Assemblez vos médias en une vidéo unique
--  **Multi-résolution** : 720p, 1080p, 4K
--  **Paramètres personnalisables** : Durée des transitions, durée d'affichage des images, FPS
--  **Lecteur vidéo intégré** : Regardez directement vos créations
+- 🎥 **Upload de vidéos** : Importez vos vidéos locales (MP4, AVI, MOV, etc.)
+- ▶️ **YouTube** : Téléchargez des vidéos depuis YouTube
+- 📷 **Images** : Ajoutez des photos pour créer des diaporamas
+- ✨ **Transitions professionnelles** : Fade, Dissolve, Wipe, Slide
+- 🎬 **Compilation automatique** : Assemblez vos médias en une vidéo unique
+- 📐 **Multi-résolution** : 720p, 1080p, 4K
+- ⚙️ **Paramètres personnalisables** : Durée des transitions, durée d'affichage des images, FPS
+- 🎞️ **Lecteur vidéo intégré** : Regardez directement vos créations
+- ✏️ **Édition complète** : Modifiez paramètres, réorganisez, ajoutez/supprimez des médias
+- 🗑️ **Suppression** : Supprimez des projets
 
 ### 🎨 Interface
 - Design moderne et responsive avec Tailwind CSS
@@ -133,7 +137,7 @@ music-mixer/
     └── video-projects.json   # Base de données projets vidéo
 ```
 
-## Utilisation
+## 🎯 Utilisation
 
 ### Créer une nouvelle playlist
 
@@ -167,9 +171,9 @@ Pour créer un montage vidéo :
 2. Remplissez le nom et la description
 3. Configurez les paramètres (résolution, transitions, durée d'affichage images)
 4. Ajoutez vos médias :
-   - **Vidéo locale** : Uploadez depuis votre ordinateur
-   - **YouTube** : Collez l'URL d'une vidéo YouTube
-   - **Image** : Uploadez des photos pour un diaporama
+   - **🎥 Vidéo locale** : Uploadez depuis votre ordinateur
+   - **▶️ YouTube** : Collez l'URL d'une vidéo YouTube
+   - **📷 Image** : Uploadez des photos pour un diaporama
 5. Cliquez sur **"Créer le projet"**
 
 ### Compiler une vidéo
@@ -181,9 +185,9 @@ Une fois votre projet créé :
 4. Un lecteur vidéo s'affiche avec votre montage final
 5. Téléchargez ou partagez votre création !
 
-**Consultez `VIDEO_GUIDE.md` pour un guide complet sur le montage vidéo.**
+**📖 Consultez `VIDEO_GUIDE.md` pour un guide complet sur le montage vidéo.**
 
-## Technologies utilisées
+## 🛠️ Technologies utilisées
 
 - **Next.js 15** : Framework React avec App Router
 - **TypeScript** : Typage statique
@@ -191,7 +195,7 @@ Une fois votre projet créé :
 - **yt-dlp** : Téléchargement audio depuis YouTube/SoundCloud
 - **ffmpeg** : Conversion et manipulation audio
 
-## Notes importantes
+## 📝 Notes importantes
 
 ### Stockage des données
 
@@ -201,21 +205,25 @@ Une fois votre projet créé :
 
 ### Limitations actuelles
 
-- Pas de modification des playlists après création (à venir)
 - Pas d'authentification utilisateur
-- Pas de suppression de playlists depuis l'interface
+- Pas de drag & drop pour réorganiser (utilisation de boutons ▲▼)
+- Pas d'historique des versions
 
-## Développement futur
+## 🔧 Développement futur
 
-- [ ] Réorganisation des titres par drag & drop
-- [ ] Ajustement de la durée du crossfade
+- [ ] Drag & drop pour réorganiser les éléments
+- [ ] Duplication de playlists/projets
+- [ ] Historique des versions avec restauration
+- [ ] Ajustement de la durée du crossfade audio
 - [ ] Égaliseur et effets audio
 - [ ] Export de playlists
-- [ ] Partage de playlists
+- [ ] Partage de playlists/projets
 - [ ] Authentification utilisateur
 - [ ] Base de données (PostgreSQL/MongoDB)
 - [ ] Métadonnées audio automatiques (artiste, durée, pochette)
 - [ ] Visualiseur audio
+- [ ] Prévisualisation avant compilation
+- [ ] Textes et titres animés pour vidéos
 
 ## 🐛 Dépannage
 

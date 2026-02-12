@@ -1,70 +1,93 @@
-'use client';
 
-import { useSearchParams } from 'next/navigation';
+'use client'
+
+import { useEffect, useState } from "react";
+import { getConvertedFiles } from "@/lib/converter";
+import { ConvertedItem } from "@/types/converted";
+import Link from "next/link";
 
 export default function ConverterPage() {
-    const searchParams = useSearchParams();
-    const audioFile = searchParams.get('file');
-    const metadata = searchParams.get('metadata') ;
-    console.log('Metadata reçue dans ConverterPage (raw):', metadata);
-    const parsedMetadata = metadata ? JSON.parse(metadata) : null;
-    console.log('Metadata reçue dans ConverterPage (parsed):', parsedMetadata);
-    const title = parsedMetadata?.title || 'Fichier Converti';
-    const author = parsedMetadata?.author || 'Inconnu';
-    const duration = parsedMetadata?.duration || '';
-    const thumbnail = parsedMetadata?.thumbnail || '';
-    console.log('Metadata reçue dans ConverterPage:', title, author);
-    const audioPath = `/audio/converted/${audioFile}`;
+    const [convertedFiles, setConvertedFiles] = useState<ConvertedItem[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchConvertedFiles = async () => {
+        try {
+            const response = await fetch('/api/convert');
+            const data = await response.json();
+            setConvertedFiles(data);
+            } catch (error) {
+            console.error('Erreur:', error);
+            } finally {
+            setLoading(false);
+            };
+        }
+    
+      useEffect(() => {
+        fetchConvertedFiles();
+      }, []);
+
+    if (loading) {
+        return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-xl">Chargement...</div>
+        </div>
+        );
+    }
+
   return ( 
-    <div className="space-y-12">
-      <div className="bg-purple-900 rounded-xl p-6 shadow-lg">
-        <div className="relative">
-            <div aria-hidden="true" className="hidden sm:block">
-                <div className="absolute inset-y-0 left-0 w-1/2 bg-purple-800 rounded-r-3xl">
+  <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-4xl font-bold">Mes Fichiers convertis</h1>
+        <Link
+          href="/"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition"
+        >
+          + Nouvelle conversion
+        </Link>
+      </div>
+
+      {convertedFiles.length === 0 ? (
+        <div className="text-center py-20 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-4">
+            Aucune conversion réalisée pour le moment
+          </p>
+          <Link
+            href="/"
+            className="text-blue-600 hover:text-blue-700 font-semibold"
+          >Retourner à l'accueil pour vos conversions 
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-8">
+          {convertedFiles.map((converted) => (
+            <div
+              key={converted.id}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold mb-2">{converted.title}</h2>
+
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span>📅 {new Date(converted.createdAt).toLocaleDateString('fr-FR')}</span>
+                    <span>📐 {converted.duration } minutes </span>
+                  </div>
                 </div>
-                <svg className="absolute top-8 left-1/2 -ml-3" width="404" height="392" fill="none" viewBox="0 0 404 392">
-                    <defs>
-                        <pattern id="8228f071-bcee-4ec8-905a-2a059a2cc4fb" x="0" y="0" width="20" height="20"
-                            patternUnits="userSpaceOnUse">
-                            <rect x="0" y="0" width="4" height="4" className="text-gray-200" fill="currentColor"></rect>
-                        </pattern>
-                    </defs>
-                    <rect width="404" height="392" fill="url(#8228f071-bcee-4ec8-905a-2a059a2cc4fb)"></rect>
-                </svg>
-            </div>
-            <div className="mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:max-w-7xl lg:px-8">
-              <div className="relative rounded-2xl px-6 py-10 bg-purple-700 overflow-hidden shadow-xl sm:px-12 sm:py-20">
-                  <div aria-hidden="true" className="absolute inset-0 -mt-72 sm:-mt-32 md:mt-0"><svg
-                          className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice"
-                          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 1463 360">
-                          <path className="text-gray-600 text-opacity-40" fill="currentColor"
-                              d="M-82.673 72l1761.849 472.086-134.327 501.315-1761.85-472.086z"></path>
-                          <path className="text-gray-800 text-opacity-40" fill="currentColor"
-                              d="M-217.088 544.086L1544.761 72l134.327 501.316-1761.849 472.086z"></path>
-                      </svg>
-                  </div>
-                  <div className="relative flex flex-col">
-                      <div className="sm:text-center">
-                          <h1 className="text-5xl font-bold text-center mb-8">Votre fichier a bien été converti !</h1>
-                          <div className="mb-4">
-                            <img src={thumbnail} alt="Thumbnail" className="mx-auto rounded-lg shadow-lg mb-4" width={400}/>
-                            <h2 className="text-xl text-center text-gray-100">{title} - {duration}</h2>
-                          </div>
-                                              </div>
-                      <div className="sm:mx-auto sm:flex sm:justify-center space-x-6">
-                      <a href={audioPath} download={audioFile} className="w-auto inline-block mt-5 mx-auto rounded-md border border-transparent px-5 py-3 bg-green-900 text-base font-medium text-white shadow hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-rose-500 sm:px-10">
-                          Télécharger le MP3 converti →
-                      </a>
-                      <a href="/"
-                          className="w-auto inline-block mt-5 mx-auto rounded-md border border-transparent px-5 py-3 bg-purple-900 text-base font-medium text-white shadow hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-rose-500 sm:px-10">
-                          Convertir une Nouvelle Vidéo →
-                      </a>
-                      </div>
-                  </div>
+
+                {/* Boutons d'action */}
+                <div className="flex gap-2">
+                    <a href={'/audio/converted/'+converted.filename}
+                      download
+                      className="bg-green-400 text-white px-6 py-2 rounded-lg cursor-pointer"
+                    >
+                      Télécharger
+                    </a>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
+      )}
     </div>
   )
 }

@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File;
     const playlistId = formData.get('playlistId') as string;
     const title = formData.get('title') as string;
-    const url = formData.get('url') as string;
 
     if (!file || !playlistId || !title) {
       return NextResponse.json({ error: 'Données manquantes' }, { status: 400 });
@@ -52,13 +51,10 @@ export async function POST(request: NextRequest) {
       filename,
       source: 'upload',
       createdAt: new Date(),
-      url: url
-
     };
 
     const updatedTracks = [...playlist.tracks, newTrack];
-    playlist.tracks = updatedTracks;
-    await updatePlaylist(playlistId,playlist);
+    await updatePlaylist(playlistId, { tracks: updatedTracks });
 
     return NextResponse.json({ success: true, track: newTrack }, { status: 201 });
   } catch (error) {

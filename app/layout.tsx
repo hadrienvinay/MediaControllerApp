@@ -16,11 +16,11 @@ export default function RootLayout({
       <body className="antialiased">
         <nav className="bg-gray-900 text-white p-4 shadow-lg">
           <div className="container mx-auto flex justify-between items-center">
-            <h1 className="text-2xl font-bold"><a href="/" className='hover:bg-violet-700 p-2 rounded'>🎵 Music Mixer</a></h1>
+            <a href="/" className="text-2xl font-bold hover:bg-purple-500 p-2 rounded" >🎵 Music Mixer</a>
             <div className="space-x-4">
-              <a href="/musique" className="hover:text-gray-300">🎵 Playlists</a>
+              <a href="/playlists" className="hover:text-gray-300">🎵 Playlists</a>
               <a href="/videos" className="hover:text-gray-300">🎬 Vidéos</a>
-              <a href="/create" className="hover:text-gray-300">+ Audio</a>
+              <a href="playlists/create" className="hover:text-gray-300">+ Audio</a>
               <a href="/videos/create" className="hover:text-gray-300">+ Vidéo</a>
             </div>
           </div>

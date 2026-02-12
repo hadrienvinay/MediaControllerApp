@@ -23,14 +23,14 @@ export async function getPlaylists(): Promise<Playlist[]> {
   }
 }
 
-export async function getPlaylistById(id: string): Promise<Playlist | null> {
-  const playlists = await getPlaylists();
-  return playlists.find(p => p.id === id) || null;
-}
-
 export async function savePlaylists(playlists: Playlist[]): Promise<void> {
   await ensureDataDir();
   await fs.writeFile(PLAYLISTS_FILE, JSON.stringify(playlists, null, 2));
+}
+
+export async function getPlaylistById(id: string): Promise<Playlist | null> {
+  const playlists = await getPlaylists();
+  return playlists.find(p => p.id === id) || null;
 }
 
 export async function createPlaylist(playlist: Omit<Playlist, 'id' | 'createdAt' | 'updatedAt'>): Promise<Playlist> {
@@ -46,13 +46,14 @@ export async function createPlaylist(playlist: Omit<Playlist, 'id' | 'createdAt'
   return newPlaylist;
 }
 
-export async function updatePlaylist(id: string, update: Playlist): Promise<Playlist | null> {
+export async function updatePlaylist(id: string, updates: Partial<Playlist>): Promise<Playlist | null> {
   const playlists = await getPlaylists();
   const index = playlists.findIndex(p => p.id === id);
   if (index === -1) return null;
+  
   playlists[index] = {
     ...playlists[index],
-    ...update,
+    ...updates,
     updatedAt: new Date(),
   };
   await savePlaylists(playlists);

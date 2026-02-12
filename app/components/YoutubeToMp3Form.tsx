@@ -41,7 +41,7 @@ export default function YoutubeToMp3Form() {
             <div>
                 <input type="url" id="url" name="url" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="Enter YouTube or SoundCloud URL" className="text-black mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required />
             </div>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-black rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <button type="submit" className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 {isSubmitting ?'Conversion...' :'Convertir en format MP3'}
             </button>
         </form>

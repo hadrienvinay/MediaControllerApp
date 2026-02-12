@@ -58,14 +58,15 @@ export async function compileVideo(options: CompileOptions): Promise<void> {
           // Convertir l'image en vidéo de durée fixe
           await new Promise<void>((res, rej) => {
             ffmpeg(file.path)
-              .loop(imageDuration)
-              .outputFPS(fps)
-              .size(`${targetRes.width}x${targetRes.height}`)
-              .videoCodec('libx264')
+              .inputOptions([`-loop 1`])
               .outputOptions([
-                '-pix_fmt yuv420p',
-                '-t', imageDuration.toString(),
+                `-t ${imageDuration}`,
+                `-vf scale=${targetRes.width}:${targetRes.height}:force_original_aspect_ratio=decrease,pad=${targetRes.width}:${targetRes.height}:(ow-iw)/2:(oh-ih)/2,setsar=1`,
+                `-r ${fps}`,
+                `-pix_fmt yuv420p`,
               ])
+              .videoCodec('libx264')
+              .noAudio()
               .output(processedPath)
               .on('end', () => res())
               .on('error', rej)
@@ -75,13 +76,15 @@ export async function compileVideo(options: CompileOptions): Promise<void> {
           // Normaliser la vidéo (résolution, codec)
           await new Promise<void>((res, rej) => {
             let command = ffmpeg(file.path)
-              .size(`${targetRes.width}x${targetRes.height}`)
-              .videoCodec('libx264')
-              .outputFPS(fps)
-              .outputOptions(['-pix_fmt yuv420p']);
+              .outputOptions([
+                `-vf scale=${targetRes.width}:${targetRes.height}:force_original_aspect_ratio=decrease,pad=${targetRes.width}:${targetRes.height}:(ow-iw)/2:(oh-ih)/2,setsar=1`,
+                `-r ${fps}`,
+                `-pix_fmt yuv420p`,
+              ])
+              .videoCodec('libx264');
 
             if (includeAudio) {
-              command = command.audioCodec('aac');
+              command = command.audioCodec('aac').audioBitrate('128k');
             } else {
               command = command.noAudio();
             }
@@ -130,68 +133,110 @@ async function compileWithXfade(
   fps: number,
   audioTrack?: string
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    // Construction du filtre complexe pour xfade
-    let command = ffmpeg();
-    
-    // Ajouter tous les fichiers en entrée
-    files.forEach(file => {
-      command = command.input(file);
-    });
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Obtenir la durée de chaque fichier
+      const durations: number[] = [];
+      for (const file of files) {
+        const duration = await getVideoDuration(file);
+        durations.push(duration);
+      }
 
-    // Ajouter la piste audio si spécifiée
-    if (audioTrack) {
-      command = command.input(audioTrack);
+      // Construction du filtre complexe pour xfade
+      let command = ffmpeg();
+      
+      // Ajouter tous les fichiers en entrée
+      files.forEach(file => {
+        command = command.input(file);
+      });
+
+      // Ajouter la piste audio si spécifiée
+      if (audioTrack) {
+        command = command.input(audioTrack);
+      }
+
+      // Construire les filtres xfade avec les offsets corrects
+      const filters: string[] = [];
+      let currentStream = '[0:v]';
+      let cumulativeOffset = 0;
+
+      for (let i = 0; i < files.length - 1; i++) {
+        const nextStream = `[${i + 1}:v]`;
+        const outputStream = i === files.length - 2 ? '[outv]' : `[v${i}]`;
+        
+        // L'offset est la durée cumulée moins la durée de transition
+        // Car le xfade commence avant la fin de la première vidéo
+        const offset = cumulativeOffset + durations[i] - transitionDuration;
+
+        // Créer un xfade entre les vidéos
+        filters.push(
+          `${currentStream}${nextStream}xfade=transition=fade:duration=${transitionDuration}:offset=${offset.toFixed(3)}${outputStream}`
+        );
+
+        currentStream = outputStream;
+        // La durée cumulée augmente de la durée de la vidéo moins la transition
+        cumulativeOffset += durations[i] - transitionDuration;
+      }
+
+      const outputOptions = ['-map', '[outv]'];
+      
+      // Gérer l'audio
+      if (audioTrack) {
+        outputOptions.push('-map', `${files.length}:a`);
+      } else {
+        // Mixer l'audio de toutes les vidéos
+        const audioFilters: string[] = [];
+        let currentAudioStream = '[0:a]';
+        
+        for (let i = 0; i < files.length - 1; i++) {
+          const nextAudioStream = `[${i + 1}:a]`;
+          const outputAudioStream = i === files.length - 2 ? '[outa]' : `[a${i}]`;
+          
+          const offset = cumulativeOffset + durations[i] - transitionDuration;
+          
+          /*audioFilters.push(
+            `${currentAudioStream}${nextAudioStream}acrossfade=d=${transitionDuration}${outputAudioStream}`
+          );*/
+          
+          currentAudioStream = outputAudioStream;
+        }
+        
+        if (audioFilters.length > 0) {
+          filters.push(...audioFilters);
+          outputOptions.push('-map', '[outa]');
+        }
+      }
+
+      command
+        .complexFilter(filters)
+        .outputOptions(outputOptions)
+        .outputOptions([
+          '-c:v libx264',
+          '-preset medium',
+          '-crf 23',
+          '-pix_fmt yuv420p',
+          '-c:a aac',
+          '-b:a 128k',
+        ])
+        .output(outputFile)
+        .on('start', (commandLine) => {
+          console.log('FFmpeg command:', commandLine);
+        })
+        .on('progress', (progress) => {
+          console.log(`Processing: ${progress.percent}% done`);
+        })
+        .on('end', () => {
+          console.log('Compilation vidéo terminée');
+          resolve();
+        })
+        .on('error', (err) => {
+          console.error('Erreur FFmpeg:', err);
+          reject(err);
+        })
+        .run();
+    } catch (error) {
+      reject(error);
     }
-
-    // Construire les filtres xfade
-    const filters: string[] = [];
-    let currentStream = '[0:v]';
-
-    for (let i = 0; i < files.length - 1; i++) {
-      const nextStream = `[${i + 1}:v]`;
-      const outputStream = i === files.length - 2 ? '[outv]' : `[v${i}]`;
-
-      // Créer un xfade entre les vidéos
-      // Note: xfade nécessite de connaître la durée des vidéos
-      filters.push(
-        `${currentStream}${nextStream}xfade=transition=fade:duration=${transitionDuration}:offset=${i * 10}${outputStream}`
-      );
-
-      currentStream = outputStream;
-    }
-
-    const outputOptions = ['-map', '[outv]'];
-    
-    if (audioTrack) {
-      outputOptions.push('-map', `${files.length}:a`);
-    }
-
-    command
-      .complexFilter(filters)
-      .outputOptions(outputOptions)
-      .outputOptions([
-        '-c:v libx264',
-        '-preset medium',
-        '-crf 23',
-        '-pix_fmt yuv420p',
-      ])
-      .output(outputFile)
-      .on('start', (commandLine) => {
-        console.log('FFmpeg command:', commandLine);
-      })
-      .on('progress', (progress) => {
-        console.log(`Processing: ${progress.percent}% done`);
-      })
-      .on('end', () => {
-        console.log('Compilation vidéo terminée');
-        resolve();
-      })
-      .on('error', (err) => {
-        console.error('Erreur FFmpeg:', err);
-        reject(err);
-      })
-      .run();
   });
 }
 
@@ -240,6 +285,23 @@ async function simpleConcatenation(
       })
       .run();
   });
+}
+
+/**
+ * Calcule la durée finale théorique d'une vidéo compilée
+ */
+export function calculateExpectedDuration(
+  clipDurations: number[],
+  transitionDuration: number
+): number {
+  if (clipDurations.length === 0) return 0;
+  if (clipDurations.length === 1) return clipDurations[0];
+  
+  const totalDuration = clipDurations.reduce((sum, d) => sum + d, 0);
+  const numTransitions = clipDurations.length - 1;
+  const transitionTime = numTransitions * transitionDuration;
+  
+  return totalDuration - transitionTime;
 }
 
 /**

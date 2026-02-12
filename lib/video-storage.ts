@@ -43,7 +43,6 @@ export async function createVideoProject(
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-  console.log('Création de projet vidéo:', newProject);
   projects.push(newProject);
   await saveVideoProjects(projects);
   return newProject;

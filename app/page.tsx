@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Playlist } from '@/types/playlist';
-import DeletePlaylistButton from './components/DeletePlaylistButton';
-import MusiquePage from './musique/page';
+import PlaylistsPage from './playlists/page';
 import VideosPage from './videos/page';
+import ConverterPage from './converter/page';
+
 import YoutubeToMp3Form from './components/YoutubeToMp3Form';
 
 export default function Home() {
@@ -45,7 +46,7 @@ export default function Home() {
                           <p className="mt-6 mx-auto max-w-2xl text-lg text-gray-100"> Faites vos montages vidéo et créer vos playlists !</p>
                       </div>
                       <div className="sm:mx-auto sm:flex sm:justify-center space-x-6">
-                      <a href="/musique/create"
+                      <a href="/playlists/create"
                           className="w-auto inline-block mt-5 mx-auto rounded-md border border-transparent px-5 py-3 bg-green-900 text-base font-medium text-white shadow hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-rose-500 sm:px-10">
                           Nouvelle Playlist →
                       </a>
@@ -82,7 +83,9 @@ export default function Home() {
         </div>
     </div>
 
-    <MusiquePage />
+    <ConverterPage />
+
+    <PlaylistsPage />
     
     <VideosPage />  
 

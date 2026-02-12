@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { VideoProject } from '@/types/video';
-import DeleteVideoButton from '../components/DeleteVideoButton';
 
 export default function VideosPage() {
   const [projects, setProjects] = useState<VideoProject[]>([]);
@@ -12,7 +11,7 @@ export default function VideosPage() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch('/api/videos');
+      const response = await fetch('/api/video-projects');
       const data = await response.json();
       setProjects(data);
     } catch (error) {
@@ -114,44 +113,37 @@ export default function VideosPage() {
                   </div>
                 </div>
 
-                <div className='flex space-x-2'>
-                  {/* Bouton d'édition et de suppression */}
-                  <div className='flex'>
-                    <Link 
-                      href={`/videos/${project.id}/update`}
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg transition"
+                {/* Boutons d'action */}
+                <div className="flex gap-2">
+                  <a
+                    href={`/videos/edit/${project.id}`}
+                    className="bg-orange-400 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition"
+                  >
+                    ✏️ Modifier
+                  </a>
+
+                  {project.isCompiling || compilingProjectId === project.id ? (
+                    <button
+                      disabled
+                      className="bg-gray-400 text-white px-6 py-2 rounded-lg cursor-not-allowed"
                     >
-                      ✏️ Modifier
-                    </Link>
-                  </div>
-                  <div className='flex'>
-                    <DeleteVideoButton videoId={project.id} /> 
-                  </div>                      
-                  {/* Bouton de compilation */}
-                  <div>
-                    {project.isCompiling || compilingProjectId === project.id ? (
-                      <button
-                        disabled
-                        className="bg-gray-400 text-white px-6 py-2 rounded-lg cursor-not-allowed"
-                      >
-                        🎬 Compilation en cours...
-                      </button>
-                    ) : project.compiledVideo ? (
-                      <button
-                        onClick={() => handleCompile(project.id)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition"
-                      >
-                        🔄 Re-compiler
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleCompile(project.id)}
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition"
-                      >
-                        🎬 Compiler la Vidéo
-                      </button>
-                    )}
-                  </div>
+                      🎬 Compilation en cours...
+                    </button>
+                  ) : project.compiledVideo ? (
+                    <button
+                      onClick={() => handleCompile(project.id)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition"
+                    >
+                      🔄 Re-compiler
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleCompile(project.id)}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition"
+                    >
+                      🎬 Compiler la Vidéo
+                    </button>
+                  )}
                 </div>
               </div>
 

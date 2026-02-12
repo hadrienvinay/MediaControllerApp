@@ -6,7 +6,6 @@ export interface Track {
   filename: string;
   source: 'upload' | 'youtube' | 'soundcloud';
   createdAt: Date;
-  url?: string; // URL d'origine pour les sources YouTube/SoundCloud
 }
 
 export interface Playlist {

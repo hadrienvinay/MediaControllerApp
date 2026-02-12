@@ -1,49 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deletePlaylist, updatePlaylist, getPlaylistById } from '@/lib/storage';
+import { getPlaylistById, updatePlaylist } from '@/lib/storage';
 
-export async function GET(request: NextRequest) {
-    try {
-        const { searchParams } = new URL(request.url);
-        const id = searchParams.get('id');          
-        if (!id) {
-          return NextResponse.json({ error: 'ID requis' }, { status: 400 });
-        }   
-        const playlist = await getPlaylistById(id);
-        if (!playlist) {
-            return NextResponse.json({ error: 'Playlist non trouvée' }, { status: 404 });
-        }
-        return NextResponse.json(playlist);
-    } catch (error) {
-        return NextResponse.json({ error: 'Erreur lors de la récupération de la playlist' }, { status: 500 });
-    }   
-}
-
-export async function DELETE(request: Request,{ params }: { params: Promise<{ id: string }> }) {
-    console.log('Requête DELETE reçue avec params:', request, params);
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const { id: idString } = await params
-    const id = parseInt(idString)
-    console.log('ID reçu pour suppression:', id);
+    const { id } = params;
+    const body = await request.json();
+    const { name, description, tracks } = body;
 
-    // Vérifier que l'ID est un nombre valide
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'ID invalide' },
-        { status: 400 }
-      )
-    }
-    if (!id) {
-      return NextResponse.json({ error: 'ID requis' }, { status: 400 });
-    }
-
-    const success = await deletePlaylist(idString);
-
-    if (!success) {
+    // Vérifier que la playlist existe
+    const existing = await getPlaylistById(id);
+    if (!existing) {
       return NextResponse.json({ error: 'Playlist non trouvée' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true });
+    // Mettre à jour la playlist
+    const updated = await updatePlaylist(id, {
+      name,
+      description,
+      tracks,
+      // Invalider le mix si les tracks ont changé
+      mixedFile: undefined,
+      mixedDuration: undefined,
+      mixError: undefined,
+    });
+
+    if (!updated) {
+      return NextResponse.json({ error: 'Erreur lors de la mise à jour' }, { status: 500 });
+    }
+
+    return NextResponse.json(updated);
   } catch (error) {
-    return NextResponse.json({ error: 'Erreur lors de la suppression' }, { status: 500 });
+    console.error('Erreur:', error);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

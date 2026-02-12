@@ -108,9 +108,9 @@ export async function getAudioMetadata(filePath: string): Promise<{
         const tags = metadata.format.tags || {};
         resolve({
           duration: metadata.format.duration || 0,
-          artist: tags.artist,
-          title: tags.title,
-          album: tags.album,
+          artist: typeof tags.artist === 'string' ? tags.artist : undefined,
+          title: typeof tags.title === 'string' ? tags.title : undefined,
+          album: typeof tags.album === 'string' ? tags.album : undefined,
         });
       }
     });

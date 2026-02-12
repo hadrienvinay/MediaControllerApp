@@ -51,6 +51,7 @@ export default function PlaylistForm({ initialData, mode }: PlaylistFormProps) {
         body: JSON.stringify({
           name: playlistName,
           description,
+          tracks: tracks,
         }),
       });
 
@@ -62,29 +63,28 @@ export default function PlaylistForm({ initialData, mode }: PlaylistFormProps) {
 
       // Uploader chaque track
       for (const track of tracks) {
-        const formData = new FormData();
-        formData.append('playlistId', playlist.id);
-        formData.append('title', track.title);
-        formData.append('source', track.source);
-        if (track.filename) {
-          formData.append('filename', track.filename);
-        }
-        else if (track.source === 'upload' && track.file) {
-          formData.append('file', track.file);
-          await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
-        } else if ((track.source === 'youtube' || track.source === 'soundcloud') && track.url) {
-          formData.append('url', track.url);
-          await fetch('/api/download', {
-            method: 'POST',
-            body: formData,
-          });
+        if (!track.filename) {
+          const formData = new FormData(); 
+          formData.append('playlistId', playlist.id);
+          formData.append('title', track.title);
+          formData.append('source', track.source);
+          if (track.source === 'upload' && track.file) {
+            formData.append('file', track.file);
+            await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
+            });
+          } else if ((track.source === 'youtube' || track.source === 'soundcloud') && track.url) {
+            formData.append('url', track.url);
+            await fetch('/api/download', {
+              method: 'POST',
+              body: formData,
+            });
+          }
         }
       }
 
-      router.push('/');
+      router.push('/musique');
       router.refresh();
     } catch (error) {
       console.error('Erreur:', error);
@@ -222,7 +222,7 @@ export default function PlaylistForm({ initialData, mode }: PlaylistFormProps) {
         <div className="flex justify-end space-x-4">
           <button
             type="button"
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/musique')}
             className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 transition"
           >
             Annuler

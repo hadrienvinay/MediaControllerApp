@@ -3,8 +3,18 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { createConvertedFile, getConvertedFiles } from '@/lib/converter';
 
 const execAsync = promisify(exec);
+
+export async function GET() {
+  try {
+    const convertedFiles = await getConvertedFiles();
+    return NextResponse.json(convertedFiles);
+  } catch (error) {
+    return NextResponse.json({ error: 'Erreur lors de la récupération des playlists' }, { status: 500 });
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,12 +66,20 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('Métadonnées récupérées:', { title, author, duration, thumbnail });
+    
+    const convertedFile = await createConvertedFile({
+          title,
+          duration,
+          filename: filename,
+          thumbnail,
+          source: 'youtube',
+        });
     return NextResponse.json({ metadata: {
         title,
         author,
         duration,
         thumbnail,
-      }, responseUrl: `/converter?file=${filename}` }, { status: 200 });
+      }, responseUrl: `/converter/create?file=${filename}` }, { status: 200 });
 
   } catch (error) {
     console.error('Erreur metadata:', error);

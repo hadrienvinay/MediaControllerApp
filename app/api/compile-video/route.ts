@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { getVideoProjectById, updateVideoProject } from '@/lib/video-storage';
-import { compileVideo, getVideoDuration } from '@/lib/video-compiler';
+import { compileVideo, getVideoDuration, calculateExpectedDuration } from '@/lib/video-compiler';
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,6 +33,23 @@ export async function POST(request: NextRequest) {
       };
     });
 
+    // Calculer la durée théorique attendue
+    const clipDurations = project.media.map((item) => {
+      if (item.type === 'image') {
+        return project.settings.imageDuration || 5;
+      } else {
+        return item.duration || 0;
+      }
+    });
+    
+    const expectedDuration = calculateExpectedDuration(
+      clipDurations,
+      project.settings.transitionDuration || 1
+    );
+
+    console.log('📊 Durées des clips:', clipDurations);
+    console.log('🎬 Durée attendue:', expectedDuration.toFixed(2), 'secondes');
+
     // Nom du fichier de sortie
     const outputFilename = `compiled_${projectId}_${Date.now()}.mp4`;
     const outputPath = path.join(process.cwd(), 'public', 'videos', outputFilename);
@@ -46,12 +63,21 @@ export async function POST(request: NextRequest) {
       });
 
       // Obtenir la durée du fichier compilé
-      const duration = await getVideoDuration(outputPath);
+      const actualDuration = await getVideoDuration(outputPath);
+      
+      console.log('✅ Durée réelle:', actualDuration.toFixed(2), 'secondes');
+      console.log('📐 Différence:', Math.abs(actualDuration - expectedDuration).toFixed(2), 'secondes');
+
+      // Vérifier que la durée est cohérente (tolérance de 0.5s)
+      const durationDiff = Math.abs(actualDuration - expectedDuration);
+      if (durationDiff > 0.5) {
+        console.warn(`⚠️  Attention: Différence de durée importante (${durationDiff.toFixed(2)}s)`);
+      }
 
       // Mettre à jour le projet avec le fichier compilé
       await updateVideoProject(projectId, {
         compiledVideo: outputFilename,
-        compiledDuration: duration,
+        compiledDuration: actualDuration,
         isCompiling: false,
         compileError: undefined,
       });
@@ -59,7 +85,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         compiledVideo: outputFilename,
-        duration,
+        duration: actualDuration,
+        expectedDuration,
+        durationDifference: durationDiff,
       });
     } catch (compileError: any) {
       console.error('Erreur lors de la compilation:', compileError);
