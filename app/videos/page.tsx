@@ -198,9 +198,11 @@ export default function VideosPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                            <span className="text-4xl">🎥</span>
-                          </div>
+                          <img
+                            src={'/thumbnails/'+item.thumbnail} 
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
                         )}
                         <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2">
                           <p className="text-xs truncate font-medium">

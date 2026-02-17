@@ -1,6 +1,7 @@
 # 🎵 Music Mixer
 
 Une application Next.js full-stack pour créer et gérer des **playlists audio** et des **projets vidéo** avec transitions professionnelles.
+Propose également un service de téléchargement de vidéo Youtube ou Soundcloud en mp3
 
 ## ✨ Fonctionnalités
 

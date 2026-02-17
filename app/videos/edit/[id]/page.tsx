@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { VideoProject, MediaItem } from '@/types/video';
+import Image from 'next/image';
 
 export default function EditVideoProjectPage() {
   const router = useRouter();
@@ -345,7 +346,7 @@ export default function EditVideoProjectPage() {
 
                   <div className="w-20 h-20 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center">
                     <span className="text-3xl">
-                      {item.type === 'image' ? '📷' : '🎥'}
+                      {item.type === 'image' && item.filename ? <Image src={'/images/'+item.filename} alt='ma photo' width={200} height={200}/> : item.type === 'video' && item.thumbnail ? <Image src={'/thumbnails/'+item.thumbnail} alt='ma video' width={200} height={200}/> : (item.type === 'image' ? '📷' : '🎬')}
                     </span>
                   </div>
 
