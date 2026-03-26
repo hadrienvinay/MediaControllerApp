@@ -1,7 +1,7 @@
-# 🎵 Music Mixer
+# 🎵 Media Controller
 
-Une application Next.js full-stack pour créer et gérer des **playlists audio** et des **projets vidéo** avec transitions professionnelles.
-Propose également un service de téléchargement de vidéo Youtube ou Soundcloud en mp3
+Une application Next.js full-stack pour créer et gérer des **playlists audio**, des **projets vidéo** avec transitions professionnelles, et un **convertisseur universel de fichiers**.
+Propose également un service de téléchargement de vidéo Youtube ou Soundcloud en mp3.
 
 ## ✨ Fonctionnalités
 
@@ -26,6 +26,18 @@ Propose également un service de téléchargement de vidéo Youtube ou Soundclou
 - 🎞️ **Lecteur vidéo intégré** : Regardez directement vos créations
 - ✏️ **Édition complète** : Modifiez paramètres, réorganisez, ajoutez/supprimez des médias
 - 🗑️ **Suppression** : Supprimez des projets
+
+### 🔄 Convertisseur de fichiers
+- 🖼️ **Images vers PDF** : Combinez plusieurs images en un seul PDF
+- 📄 **Fusionner des PDFs** : Assemblez plusieurs fichiers PDF
+- 🔀 **Conversion d'image** : Convertissez entre PNG, JPEG et WebP
+- 📸 **PDF vers Images** : Extrayez chaque page d'un PDF en PNG
+- ✂️ **Découper un PDF** : Extrayez une plage de pages d'un PDF
+- 🗜️ **Compresser une image** : Réduisez le poids d'une image (qualité ajustable)
+- 🎞️ **Vidéo vers GIF** : Créez un GIF animé depuis une vidéo (FPS, largeur, timing)
+- 🌐 **HTML/URL vers PDF** : Convertissez une page web ou du code HTML en PDF
+- 🔊 **Vidéo vers Audio** : Extrayez la piste audio d'une vidéo (MP3, WAV, AAC)
+- 📐 **Redimensionner/Compresser vidéo** : Changez la résolution, le bitrate et les FPS
 
 ### 🎨 Interface
 - Design moderne et responsive avec Tailwind CSS
@@ -124,18 +136,23 @@ music-mixer/
 │   ├── storage.ts            # Stockage playlists audio (JSON)
 │   ├── audio-mixer.ts        # Fusion audio avec FFmpeg
 │   ├── video-storage.ts      # Stockage projets vidéo (JSON)
-│   └── video-compiler.ts     # Compilation vidéo avec FFmpeg
+│   ├── video-compiler.ts     # Compilation vidéo avec FFmpeg
+│   ├── file-converter.ts     # Fonctions de conversion de fichiers
+│   └── file-conversion-storage.ts # Stockage conversions (JSON)
 ├── types/
 │   ├── playlist.ts           # Types playlists audio
-│   └── video.ts              # Types projets vidéo
+│   ├── video.ts              # Types projets vidéo
+│   └── file-conversion.ts    # Types conversions de fichiers
 ├── public/
 │   ├── audio/                # Fichiers audio (MP3)
 │   ├── videos/               # Fichiers vidéo (MP4)
 │   ├── images/               # Images uploadées
-│   └── thumbnails/           # Miniatures des vidéos
+│   ├── thumbnails/           # Miniatures des vidéos
+│   └── converted/            # Fichiers convertis (PDF, GIF, etc.)
 └── data/
     ├── playlists.json        # Base de données playlists
-    └── video-projects.json   # Base de données projets vidéo
+    ├── video-projects.json   # Base de données projets vidéo
+    └── file-conversions.json # Base de données conversions
 ```
 
 ## 🎯 Utilisation
@@ -188,13 +205,28 @@ Une fois votre projet créé :
 
 **📖 Consultez `VIDEO_GUIDE.md` pour un guide complet sur le montage vidéo.**
 
+### Convertir des fichiers
+
+1. Allez dans **🔄 Convertisseur** dans la navigation
+2. Choisissez l'outil souhaité via les onglets :
+   - **Images → PDF** / **Fusionner PDFs** / **Convertir image** / **PDF → Images**
+   - **Découper PDF** / **Compresser image** / **Vidéo → GIF**
+   - **HTML/URL → PDF** / **Vidéo → Audio** / **Redimensionner vidéo**
+3. Uploadez vos fichiers ou saisissez une URL
+4. Configurez les options (qualité, format, résolution...)
+5. Lancez la conversion et téléchargez le résultat
+
 ## 🛠️ Technologies utilisées
 
 - **Next.js 15** : Framework React avec App Router
 - **TypeScript** : Typage statique
 - **Tailwind CSS** : Framework CSS utility-first
 - **yt-dlp** : Téléchargement audio depuis YouTube/SoundCloud
-- **ffmpeg** : Conversion et manipulation audio
+- **ffmpeg** : Conversion et manipulation audio/vidéo
+- **pdf-lib** : Manipulation de fichiers PDF (fusion, découpe, création)
+- **mupdf** : Rendu PDF vers images (WASM, sans dépendance système)
+- **sharp** : Traitement d'images (conversion, compression, redimensionnement)
+- **puppeteer** : Rendu HTML/URL vers PDF via Chromium headless
 
 ## 📝 Notes importantes
 
@@ -202,6 +234,7 @@ Une fois votre projet créé :
 
 - Les playlists sont stockées dans `data/playlists.json`
 - Les fichiers audio sont dans `public/audio/`
+- Les fichiers convertis sont dans `public/converted/`
 - Aucune base de données externe nécessaire pour commencer
 
 ### Limitations actuelles
@@ -225,6 +258,12 @@ Une fois votre projet créé :
 - [ ] Visualiseur audio
 - [ ] Prévisualisation avant compilation
 - [ ] Textes et titres animés pour vidéos
+- [ ] Word (DOCX) → PDF
+- [ ] Excel (XLSX) → PDF
+- [ ] PowerPoint (PPTX) → PDF
+- [ ] Markdown → PDF
+- [ ] Filigrane (watermark) sur PDF
+- [ ] Extraction d'image à un timestamp vidéo
 
 ## 🐛 Dépannage
 
@@ -252,4 +291,4 @@ MIT
 
 ---
 
-Développé avec ❤️ et Next.js
+Développé avec ❤️ et Next.js + FFmpeg + pdf-lib + sharp + puppeteer + mupdf
