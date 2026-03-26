@@ -20,6 +20,7 @@ export default function RootLayout({
             <div className="space-x-4">
               <a href="/playlists" className="hover:text-gray-300">🎵 Playlists</a>
               <a href="/videos" className="hover:text-gray-300">🎬 Vidéos</a>
+              <a href="/converter" className="hover:text-gray-300">🔄 Convertisseur</a>
               <a href="playlists/create" className="hover:text-gray-300">+ Audio</a>
               <a href="/videos/create" className="hover:text-gray-300">+ Vidéo</a>
             </div>
