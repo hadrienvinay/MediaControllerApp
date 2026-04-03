@@ -8,7 +8,8 @@ export type ConversionType =
   | 'video-to-gif'
   | 'html-to-pdf'
   | 'video-to-audio'
-  | 'video-resize';
+  | 'video-resize'
+  | 'audio-trim';
 
 export interface FileConversion {
   id: string;

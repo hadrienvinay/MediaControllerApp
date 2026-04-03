@@ -203,6 +203,19 @@ export async function videoToAudio(
   );
 }
 
+export async function trimAudio(
+  inputPath: string,
+  outputPath: string,
+  startTime: number,
+  endTime: number
+): Promise<void> {
+  const duration = endTime - startTime;
+  await execAsync(
+    `ffmpeg -i "${inputPath}" -ss ${startTime} -t ${duration} -c copy -avoid_negative_ts 1 -y "${outputPath}"`,
+    { maxBuffer: 50 * 1024 * 1024 }
+  );
+}
+
 export async function resizeCompressVideo(
   inputPath: string,
   outputPath: string,

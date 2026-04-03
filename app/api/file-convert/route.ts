@@ -13,6 +13,7 @@ import {
   htmlToPdf,
   videoToAudio,
   resizeCompressVideo,
+  trimAudio,
 } from '@/lib/file-converter';
 import { getFileConversions, createFileConversion, deleteFileConversion } from '@/lib/file-conversion-storage';
 import { ConversionType } from '@/types/file-conversion';
@@ -45,8 +46,9 @@ export async function POST(request: NextRequest) {
     const files = formData.getAll('files') as File[];
     const targetFormat = formData.get('targetFormat') as string | null;
 
-    // html-to-pdf can work without files (URL or HTML content)
-    if (!type || (files.length === 0 && type !== 'html-to-pdf')) {
+    // html-to-pdf and audio-trim (with existingFile) can work without uploaded files
+    const hasExistingFile = type === 'audio-trim' && formData.get('existingFile');
+    if (!type || (files.length === 0 && type !== 'html-to-pdf' && !hasExistingFile)) {
       return NextResponse.json({ error: 'Type et fichiers requis' }, { status: 400 });
     }
 
@@ -152,6 +154,83 @@ export async function POST(request: NextRequest) {
         inputFilenames: fileNames,
         outputFilename,
         outputFormat: audioFormat,
+        fileSize: stat.size,
+      });
+
+      return NextResponse.json({
+        success: true,
+        conversion,
+        downloadUrl: `/converted/${outputFilename}`,
+      });
+    }
+
+    // Audio trim — supports file upload OR existing server file via 'existingFile' param
+    if (type === 'audio-trim') {
+      const startTime = parseFloat(formData.get('startTime') as string) || 0;
+      const endTime = parseFloat(formData.get('endTime') as string);
+      if (!endTime || endTime <= startTime) {
+        return NextResponse.json({ error: 'Plage de temps invalide' }, { status: 400 });
+      }
+
+      const existingFile = formData.get('existingFile') as string | null;
+      let inputPath: string;
+      let shouldDeleteInput = false;
+      let ext: string;
+      let inputName: string;
+
+      if (existingFile) {
+        // Use a file already on the server (e.g. from YouTube conversion)
+        // Validate filename to prevent path traversal: must be uuid.ext pattern
+        if (!/^[a-f0-9-]+\.\w+$/.test(existingFile)) {
+          return NextResponse.json({ error: 'Nom de fichier invalide' }, { status: 400 });
+        }
+        // Check in both converted/ and audio/converted/ directories
+        const convertedPath = path.join(CONVERTED_DIR, existingFile);
+        const audioConvertedPath = path.join(process.cwd(), 'public', 'audio', 'converted', existingFile);
+        try {
+          await fs.access(audioConvertedPath);
+          inputPath = audioConvertedPath;
+        } catch {
+          try {
+            await fs.access(convertedPath);
+            inputPath = convertedPath;
+          } catch {
+            return NextResponse.json({ error: 'Fichier source introuvable' }, { status: 404 });
+          }
+        }
+        ext = path.extname(existingFile);
+        inputName = existingFile;
+      } else {
+        // Standard file upload
+        ext = path.extname(fileNames[0]) || '.mp3';
+        inputName = fileNames[0];
+        const inputFilename = `input-${uuidv4()}${ext}`;
+        inputPath = path.join(CONVERTED_DIR, inputFilename);
+        await fs.writeFile(inputPath, fileBuffers[0]);
+        shouldDeleteInput = true;
+      }
+
+      const outputFilename = `${uuidv4()}${ext}`;
+      const outputPath = path.join(CONVERTED_DIR, outputFilename);
+
+      try {
+        await trimAudio(inputPath, outputPath, startTime, endTime);
+      } finally {
+        if (shouldDeleteInput) {
+          try { await fs.unlink(inputPath); } catch {}
+        }
+      }
+
+      const stat = await fs.stat(outputPath);
+      const duration = endTime - startTime;
+      const mm = Math.floor(duration / 60);
+      const ss = Math.floor(duration % 60);
+      const conversion = await createFileConversion({
+        type,
+        title: `Audio découpé (${mm}:${ss.toString().padStart(2, '0')})`,
+        inputFilenames: [inputName],
+        outputFilename,
+        outputFormat: ext.slice(1),
         fileSize: stat.size,
       });
 
