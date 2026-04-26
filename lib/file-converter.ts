@@ -1,6 +1,7 @@
 import { PDFDocument } from 'pdf-lib';
 import sharp from 'sharp';
 import * as mupdf from 'mupdf';
+import * as QRCode from 'qrcode';
 import puppeteer from 'puppeteer';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -59,8 +60,33 @@ export async function mergePdfs(files: Buffer[]): Promise<Buffer> {
 
 export async function convertImageFormat(
   file: Buffer,
-  toFormat: 'png' | 'jpeg' | 'webp'
+  toFormat: 'png' | 'jpeg' | 'webp' | 'ico'
 ): Promise<Buffer> {
+  if (toFormat === 'ico') {
+    // Resize to 256x256 (max ICO size) and convert to PNG, then wrap in ICO container
+    const pngBuffer = await sharp(file)
+      .resize(256, 256, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png()
+      .toBuffer();
+
+    // ICO file format: ICONDIR header + ICONDIRENTRY + PNG data
+    const header = Buffer.alloc(6);
+    header.writeUInt16LE(0, 0);      // Reserved
+    header.writeUInt16LE(1, 2);      // Type: 1 = ICO
+    header.writeUInt16LE(1, 4);      // Number of images
+
+    const entry = Buffer.alloc(16);
+    entry.writeUInt8(0, 0);          // Width: 0 = 256
+    entry.writeUInt8(0, 1);          // Height: 0 = 256
+    entry.writeUInt8(0, 2);          // Color palette
+    entry.writeUInt8(0, 3);          // Reserved
+    entry.writeUInt16LE(1, 4);       // Color planes
+    entry.writeUInt16LE(32, 6);      // Bits per pixel
+    entry.writeUInt32LE(pngBuffer.length, 8);  // Image size
+    entry.writeUInt32LE(22, 12);     // Offset (6 + 16 = 22)
+
+    return Buffer.concat([header, entry, pngBuffer]);
+  }
   return sharp(file).toFormat(toFormat).toBuffer();
 }
 
@@ -228,4 +254,15 @@ export async function resizeCompressVideo(
     `ffmpeg -i "${inputPath}" -vf "scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2" -b:v ${bitrate} -r ${fps} -c:v libx264 -preset medium -c:a aac -b:a 128k -y "${outputPath}"`,
     { maxBuffer: 50 * 1024 * 1024 }
   );
+}
+
+export async function generateQRCode(
+  text: string,
+  format: 'png' | 'svg' = 'png'
+): Promise<Buffer> {
+  if (format === 'svg') {
+    const svg = await QRCode.toString(text, { type: 'svg', width: 300 });
+    return Buffer.from(svg);
+  }
+  return QRCode.toBuffer(text, { width: 300, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
 }

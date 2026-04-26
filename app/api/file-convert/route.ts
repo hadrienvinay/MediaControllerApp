@@ -14,6 +14,7 @@ import {
   videoToAudio,
   resizeCompressVideo,
   trimAudio,
+  generateQRCode,
 } from '@/lib/file-converter';
 import { getFileConversions, createFileConversion, deleteFileConversion } from '@/lib/file-conversion-storage';
 import { ConversionType } from '@/types/file-conversion';
@@ -46,9 +47,10 @@ export async function POST(request: NextRequest) {
     const files = formData.getAll('files') as File[];
     const targetFormat = formData.get('targetFormat') as string | null;
 
-    // html-to-pdf and audio-trim (with existingFile) can work without uploaded files
+    // html-to-pdf, audio-trim (with existingFile), and qr-code can work without uploaded files
     const hasExistingFile = type === 'audio-trim' && formData.get('existingFile');
-    if (!type || (files.length === 0 && type !== 'html-to-pdf' && !hasExistingFile)) {
+    const isQrCode = type === 'qr-code';
+    if (!type || (files.length === 0 && type !== 'html-to-pdf' && !hasExistingFile && !isQrCode)) {
       return NextResponse.json({ error: 'Type et fichiers requis' }, { status: 400 });
     }
 
@@ -154,6 +156,42 @@ export async function POST(request: NextRequest) {
         inputFilenames: fileNames,
         outputFilename,
         outputFormat: audioFormat,
+        fileSize: stat.size,
+      });
+
+      return NextResponse.json({
+        success: true,
+        conversion,
+        downloadUrl: `/converted/${outputFilename}`,
+      });
+    }
+
+    // QR code generator
+    if (type === 'qr-code') {
+      const text = formData.get('text') as string;
+      const qrFormat = (formData.get('qrFormat') as string) || 'png';
+      if (!text || text.length === 0) {
+        return NextResponse.json({ error: 'Texte requis pour générer un QR code' }, { status: 400 });
+      }
+
+      const outputExt = qrFormat === 'svg' ? 'svg' : 'png';
+      const outputFilename = `${uuidv4()}.${outputExt}`;
+      const outputPath = path.join(CONVERTED_DIR, outputFilename);
+
+      try {
+        const buffer = await generateQRCode(text, qrFormat as 'png' | 'svg');
+        await fs.writeFile(outputPath, buffer);
+      } catch (error) {
+        return NextResponse.json({ error: 'Erreur lors de la génération du QR code' }, { status: 500 });
+      }
+
+      const stat = await fs.stat(outputPath);
+      const conversion = await createFileConversion({
+        type,
+        title: `QR Code (${text.substring(0, 30)}${text.length > 30 ? '...' : ''})`,
+        inputFilenames: [text],
+        outputFilename,
+        outputFormat: outputExt,
         fileSize: stat.size,
       });
 
@@ -333,12 +371,14 @@ export async function POST(request: NextRequest) {
         break;
       }
       case 'image-convert': {
-        if (!targetFormat || !['png', 'jpeg', 'webp'].includes(targetFormat)) {
+        if (!targetFormat || !['png', 'jpeg', 'webp', 'ico'].includes(targetFormat)) {
           return NextResponse.json({ error: 'Format cible invalide' }, { status: 400 });
         }
-        outputBuffer = await convertImageFormat(fileBuffers[0], targetFormat as 'png' | 'jpeg' | 'webp');
+        outputBuffer = await convertImageFormat(fileBuffers[0], targetFormat as 'png' | 'jpeg' | 'webp' | 'ico');
         outputFormat = targetFormat === 'jpeg' ? 'jpg' : targetFormat;
-        title = `Conversion image vers ${outputFormat.toUpperCase()}`;
+        title = targetFormat === 'ico'
+          ? 'Conversion image vers ICO (favicon 256x256)'
+          : `Conversion image vers ${outputFormat.toUpperCase()}`;
         break;
       }
       case 'split-pdf': {

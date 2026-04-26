@@ -16,8 +16,9 @@ import VideoToAudioForm from '../components/VideoToAudioForm';
 import VideoResizeForm from '../components/VideoResizeForm';
 import AudioTrimForm from '../components/AudioTrimForm';
 import YoutubeToMp3Form from '../components/YoutubeToMp3Form';
+import QrCodeForm from '../components/QrCodeForm';
 
-type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim';
+type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code';
 
 const tabs: { key: Tab; label: string }[] = [
   { key: 'audio', label: 'Audio converti' },
@@ -31,14 +32,87 @@ const tabs: { key: Tab; label: string }[] = [
   { key: 'video-to-gif', label: 'Vidéo → GIF' },
   { key: 'video-to-audio', label: 'Vidéo → Audio' },
   { key: 'video-resize', label: 'Redimensionner vidéo' },
-  { key: 'audio-trim', label: '✂ Découper audio' },
+  { key: 'audio-trim', label: 'Découper audio' },
+  { key: 'qr-code', label: 'QR Code' },
 ];
+
+const getTabIcon = (key: Tab) => {
+  const icons: Record<Tab, React.ReactNode> = {
+    'audio': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v10a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H7a2 2 0 01-2-2v-2H3a2 2 0 01-2-2V7a2 2 0 012-2h2V3zM9 4V3h2v1H9zm6 5a1 1 0 11-2 0 1 1 0 012 0z" />
+      </svg>
+    ),
+    'images-to-pdf': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
+      </svg>
+    ),
+    'pdf-to-images': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.3A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z" />
+      </svg>
+    ),
+    'merge-pdfs': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 011 1v2h2V4a1 1 0 011-1h4a1 1 0 011 1v2h2V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2h-2V4a2 2 0 00-2-2H4a2 2 0 00-2 2v2h2V4zm0 8a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clipRule="evenodd" />
+      </svg>
+    ),
+    'split-pdf': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+      </svg>
+    ),
+    'html-to-pdf': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2H4a1 1 0 110-2V4zm4 2a1 1 0 011-1h4a1 1 0 110 2H9a1 1 0 01-1-1zm0 4a1 1 0 011-1h4a1 1 0 110 2H9a1 1 0 01-1-1zm0 4a1 1 0 011-1h4a1 1 0 110 2H9a1 1 0 01-1-1z" />
+      </svg>
+    ),
+    'image-convert': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5.5 12a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM13 6.883l-.8 1.6a1 1 0 11-1.786-.894l.5-1a1 1 0 00-.894-1.789H8a1 1 0 000 2h1.382l-.5 1a1 1 0 101.786.894l.8-1.6a1 1 0 001.786 0l.8 1.6a1 1 0 101.786-.894l-.5-1H16a1 1 0 100-2h-2.118z" />
+      </svg>
+    ),
+    'compress-image': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a1 1 0 102 0V6h10V4a2 2 0 00-2-2H4zm-2 9a1 1 0 011-1h2a1 1 0 110 2H3a1 1 0 01-1-1zm13-3a1 1 0 110 2h-2a1 1 0 110-2h2zm-4 7a1 1 0 110 2H7a1 1 0 110-2h5z" clipRule="evenodd" />
+      </svg>
+    ),
+    'video-to-gif': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM4 8a1 1 0 011 1v2a1 1 0 11-2 0V9a1 1 0 011-1zm8 0a1 1 0 011 1v2a1 1 0 11-2 0V9a1 1 0 011-1zm4 0a1 1 0 011 1v2a1 1 0 11-2 0V9a1 1 0 011-1z" />
+      </svg>
+    ),
+    'video-to-audio': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9 3a1 1 0 011 1v5h2V4a1 1 0 112 0v5a3 3 0 11-6 0V4a1 1 0 011-1zM8 16a4 4 0 108 0H8z" />
+      </svg>
+    ),
+    'video-resize': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 3a2 2 0 00-2 2v2H1a1 1 0 000 2h2v2H1a1 1 0 000 2h2v2a2 2 0 002 2h2v2a1 1 0 102 0v-2h2v2a1 1 0 102 0v-2h2a2 2 0 002-2v-2h2a1 1 0 100-2h-2v-2h2a1 1 0 000-2h-2V5a2 2 0 00-2-2h-2V1a1 1 0 10-2 0v2H7V1a1 1 0 00-2 0v2H5z" />
+      </svg>
+    ),
+    'audio-trim': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M2 4a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm0 8a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H3a1 1 0 01-1-1v-2z" clipRule="evenodd" />
+      </svg>
+    ),
+    'qr-code': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M3 2a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V2zm12 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V2zM3 14a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zm10-2a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1v-4a1 1 0 00-1-1h-4z" />
+      </svg>
+    ),
+  };
+  return icons[key];
+};
 
 export default function ConverterPage() {
   const [activeTab, setActiveTab] = useState<Tab>('audio');
   const [convertedFiles, setConvertedFiles] = useState<ConvertedItem[]>([]);
   const [fileConversions, setFileConversions] = useState<FileConversion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewingQrId, setPreviewingQrId] = useState<string | null>(null);
 
   // Audio trim state
   const [trimmingFileId, setTrimmingFileId] = useState<string | null>(null);
@@ -180,33 +254,52 @@ export default function ConverterPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-4xl font-bold">Convertisseur</h1>
+    <div className="space-y-12">
+      {/* Header */}
+      <div className="space-y-4">
+        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+          Convertisseur Universel
+        </h1>
+        <p className="text-gray-400 text-lg max-w-2xl">
+          Convertissez vos fichiers audio, vidéo, images, PDF, QR codes et bien plus.
+        </p>
+      </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2">
+      {/* Categories Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-lg font-semibold transition ${
+            className={`group relative px-3 py-4 rounded-xl font-semibold text-sm transition-all duration-200 flex flex-col items-center gap-2 ${
               activeTab === tab.key
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-600/50'
+                : 'bg-gray-800/50 border border-gray-700/50 text-gray-300 hover:bg-gray-800 hover:border-blue-500/50'
             }`}
           >
-            {tab.label}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl opacity-0 group-hover:opacity-100 blur transition -z-10" />
+            <div className={`text-xl transition-transform group-hover:scale-110 ${activeTab === tab.key ? 'text-white' : 'text-gray-400'}`}>
+              {getTabIcon(tab.key)}
+            </div>
+            <span className="text-center text-xs sm:text-sm leading-tight">{tab.label}</span>
           </button>
         ))}
       </div>
 
       {/* Tab Content */}
       {activeTab === 'audio' && (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* YouTube / SoundCloud conversion form */}
-          <div className="bg-gray-800 rounded-lg p-6 space-y-3">
-            <h2 className="text-xl font-bold">Convertir depuis YouTube / SoundCloud</h2>
-            <YoutubeToMp3Form />
+          <div className="rounded-2xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-orange-500/30 p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <svg className="w-8 h-8 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm4 2v4h8V8H6z" />
+              </svg>
+              <h2 className="text-2xl font-bold">Convertir depuis YouTube / SoundCloud</h2>
+            </div>
+            <div className="bg-gray-900/50 rounded-xl p-6">
+              <YoutubeToMp3Form />
+            </div>
           </div>
 
           <h2 className="text-2xl font-bold">Mes Fichiers audio convertis</h2>
@@ -515,6 +608,15 @@ export default function ConverterPage() {
         </div>
       )}
 
+      {activeTab === 'qr-code' && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Générateur de QR Code</h2>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <QrCodeForm onConversionDone={fetchFileConversions} />
+          </div>
+        </div>
+      )}
+
       {/* File conversion history (for non-audio tabs) */}
       {activeTab !== 'audio' && filteredConversions.length > 0 && (
         <div className="space-y-4">
@@ -533,6 +635,14 @@ export default function ConverterPage() {
                   </p>
                 </div>
                 <div className="flex gap-2">
+                  {conversion.type === 'qr-code' && (
+                    <button
+                      onClick={() => setPreviewingQrId(conversion.id)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition"
+                    >
+                      Voir
+                    </button>
+                  )}
                   <a
                     href={`/converted/${conversion.outputFilename}`}
                     download
@@ -549,6 +659,37 @@ export default function ConverterPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Preview Modal */}
+      {previewingQrId && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setPreviewingQrId(null)}>
+          <div className="bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold">Aperçu QR Code</h3>
+              <button
+                onClick={() => setPreviewingQrId(null)}
+                className="text-gray-400 hover:text-white transition text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+            {fileConversions.find(c => c.id === previewingQrId) && (
+              <div className="space-y-4">
+                <div className="bg-white p-4 rounded-lg flex items-center justify-center">
+                  <img
+                    src={`/converted/${fileConversions.find(c => c.id === previewingQrId)?.outputFilename}`}
+                    alt="QR Code Preview"
+                    className="max-w-xs max-h-96"
+                  />
+                </div>
+                <p className="text-sm text-gray-400">
+                  {fileConversions.find(c => c.id === previewingQrId)?.title}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

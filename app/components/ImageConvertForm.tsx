@@ -75,6 +75,7 @@ export default function ImageConvertForm({ onConversionDone }: ImageConvertFormP
           <option value="png">PNG</option>
           <option value="jpeg">JPG</option>
           <option value="webp">WebP</option>
+          <option value="ico">ICO (favicon 256x256)</option>
         </select>
       </div>
 

@@ -9,7 +9,8 @@ export type ConversionType =
   | 'html-to-pdf'
   | 'video-to-audio'
   | 'video-resize'
-  | 'audio-trim';
+  | 'audio-trim'
+  | 'qr-code';
 
 export interface FileConversion {
   id: string;
