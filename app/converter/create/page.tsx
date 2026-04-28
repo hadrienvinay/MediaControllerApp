@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 function formatTime(s: number): string {
   const m = Math.floor(s / 60);
@@ -10,7 +10,7 @@ function formatTime(s: number): string {
   return `${m}:${sec.toString().padStart(2, '0')}.${ms}`;
 }
 
-export default function ConverterCreatePage() {
+function ConverterCreateContent() {
   const searchParams = useSearchParams();
   const audioFile = searchParams.get('file');
   const metadata = searchParams.get('metadata');
@@ -348,5 +348,13 @@ export default function ConverterCreatePage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ConverterCreatePage() {
+  return (
+    <Suspense>
+      <ConverterCreateContent />
+    </Suspense>
   );
 }

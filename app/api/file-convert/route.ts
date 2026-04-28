@@ -15,6 +15,8 @@ import {
   resizeCompressVideo,
   trimAudio,
   generateQRCode,
+  signPdf,
+  isolateVoice,
 } from '@/lib/file-converter';
 import { getFileConversions, createFileConversion, deleteFileConversion } from '@/lib/file-conversion-storage';
 import { ConversionType } from '@/types/file-conversion';
@@ -342,6 +344,77 @@ export async function POST(request: NextRequest) {
         inputFilenames: fileNames,
         outputFilename,
         outputFormat: 'gif',
+        fileSize: stat.size,
+      });
+
+      return NextResponse.json({
+        success: true,
+        conversion,
+        downloadUrl: `/converted/${outputFilename}`,
+      });
+    }
+
+    // Voice isolation
+    if (type === 'voice-isolate') {
+      const inputExt = path.extname(fileNames[0]) || '.mp3';
+      const inputFilename = `input-${uuidv4()}${inputExt}`;
+      const inputPath = path.join(CONVERTED_DIR, inputFilename);
+      await fs.writeFile(inputPath, fileBuffers[0]);
+
+      const outputFilename = `${uuidv4()}.mp3`;
+      const outputPath = path.join(CONVERTED_DIR, outputFilename);
+
+      try {
+        await isolateVoice(inputPath, outputPath);
+      } catch (err: unknown) {
+        const message = (err as Error).message || 'Erreur lors de l\'isolation de la voix';
+        return NextResponse.json({ error: message }, { status: 500 });
+      } finally {
+        try { await fs.unlink(inputPath); } catch {}
+      }
+
+      const stat = await fs.stat(outputPath);
+      const conversion = await createFileConversion({
+        type,
+        title: `Voix isolée — ${fileNames[0]}`,
+        inputFilenames: fileNames,
+        outputFilename,
+        outputFormat: 'mp3',
+        fileSize: stat.size,
+      });
+
+      return NextResponse.json({
+        success: true,
+        conversion,
+        downloadUrl: `/converted/${outputFilename}`,
+      });
+    }
+
+    // PDF signing
+    if (type === 'sign-pdf') {
+      const signatureFile = formData.get('signatureFile') as File | null;
+      if (!signatureFile) {
+        return NextResponse.json({ error: 'Image de signature requise' }, { status: 400 });
+      }
+      const pageNumber = parseInt(formData.get('pageNumber') as string) || 1;
+      const x = parseFloat(formData.get('x') as string) || 0;
+      const y = parseFloat(formData.get('y') as string) || 0;
+      const widthPercent = parseFloat(formData.get('widthPercent') as string) || 0.3;
+
+      const sigBuffer = Buffer.from(await signatureFile.arrayBuffer());
+      const outputBuffer = await signPdf(fileBuffers[0], sigBuffer, pageNumber, x, y, widthPercent);
+
+      const outputFilename = `${uuidv4()}.pdf`;
+      const outputPath = path.join(CONVERTED_DIR, outputFilename);
+      await fs.writeFile(outputPath, outputBuffer);
+
+      const stat = await fs.stat(outputPath);
+      const conversion = await createFileConversion({
+        type,
+        title: `PDF signé (page ${pageNumber})`,
+        inputFilenames: fileNames,
+        outputFilename,
+        outputFormat: 'pdf',
         fileSize: stat.size,
       });
 

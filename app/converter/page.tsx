@@ -17,8 +17,10 @@ import VideoResizeForm from '../components/VideoResizeForm';
 import AudioTrimForm from '../components/AudioTrimForm';
 import YoutubeToMp3Form from '../components/YoutubeToMp3Form';
 import QrCodeForm from '../components/QrCodeForm';
+import SignPdfForm from '../components/SignPdfForm';
+import VoiceIsolateForm from '../components/VoiceIsolateForm';
 
-type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code';
+type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code' | 'sign-pdf' | 'voice-isolate';
 
 const tabs: { key: Tab; label: string }[] = [
   { key: 'audio', label: 'Audio converti' },
@@ -34,6 +36,8 @@ const tabs: { key: Tab; label: string }[] = [
   { key: 'video-resize', label: 'Redimensionner vidéo' },
   { key: 'audio-trim', label: 'Découper audio' },
   { key: 'qr-code', label: 'QR Code' },
+  { key: 'sign-pdf', label: 'Signer PDF' },
+  { key: 'voice-isolate', label: 'Isoler la voix' },
 ];
 
 const getTabIcon = (key: Tab) => {
@@ -101,6 +105,16 @@ const getTabIcon = (key: Tab) => {
     'qr-code': (
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path d="M3 2a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V2zm12 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V2zM3 14a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zm10-2a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1v-4a1 1 0 00-1-1h-4z" />
+      </svg>
+    ),
+    'sign-pdf': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+      </svg>
+    ),
+    'voice-isolate': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
       </svg>
     ),
   };
@@ -613,6 +627,24 @@ export default function ConverterPage() {
           <h2 className="text-2xl font-bold">Générateur de QR Code</h2>
           <div className="bg-gray-800 rounded-lg p-6">
             <QrCodeForm onConversionDone={fetchFileConversions} />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'sign-pdf' && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Signer un PDF</h2>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <SignPdfForm onConversionDone={fetchFileConversions} />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'voice-isolate' && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Isoler la voix</h2>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <VoiceIsolateForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}

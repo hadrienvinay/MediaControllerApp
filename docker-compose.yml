@@ -1,0 +1,23 @@
+services:
+  media-controller:
+    build: .
+    container_name: media-controller
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persist user data and uploaded/converted files
+      - ./data:/app/data
+      - ./public/audio:/app/public/audio
+      - ./public/videos:/app/public/videos
+      - ./public/images:/app/public/images
+      - ./public/thumbnails:/app/public/thumbnails
+      - ./public/converted:/app/public/converted
+      # Cache demucs model weights (~80 MB, downloaded on first voice isolation)
+      - demucs-cache:/root/.cache
+    environment:
+      - NODE_ENV=production
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+volumes:
+  demucs-cache:

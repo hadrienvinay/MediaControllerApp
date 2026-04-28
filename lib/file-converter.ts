@@ -1,6 +1,5 @@
 import { PDFDocument } from 'pdf-lib';
 import sharp from 'sharp';
-import * as mupdf from 'mupdf';
 import * as QRCode from 'qrcode';
 import puppeteer from 'puppeteer';
 import { exec } from 'child_process';
@@ -91,13 +90,13 @@ export async function convertImageFormat(
 }
 
 export async function pdfToImages(file: Buffer): Promise<Buffer[]> {
+  const mupdf = await import('mupdf');
   const doc = mupdf.Document.openDocument(file, 'application/pdf');
   const pageCount = doc.countPages();
   const images: Buffer[] = [];
 
   for (let i = 0; i < pageCount; i++) {
     const page = doc.loadPage(i);
-    // Render at 2x scale for good quality (144 DPI)
     const pixmap = page.toPixmap(mupdf.Matrix.scale(2, 2), mupdf.ColorSpace.DeviceRGB, false, true);
     const pngData = pixmap.asPNG();
     images.push(Buffer.from(pngData));
@@ -190,7 +189,11 @@ export async function htmlToPdf(
   content: string,
   isUrl: boolean
 ): Promise<Buffer> {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+  });
   try {
     const page = await browser.newPage();
 
@@ -254,6 +257,67 @@ export async function resizeCompressVideo(
     `ffmpeg -i "${inputPath}" -vf "scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2" -b:v ${bitrate} -r ${fps} -c:v libx264 -preset medium -c:a aac -b:a 128k -y "${outputPath}"`,
     { maxBuffer: 50 * 1024 * 1024 }
   );
+}
+
+export async function isolateVoice(inputPath: string, outputPath: string): Promise<void> {
+  const tmpDir = path.join(path.dirname(outputPath), `demucs-${uuidv4()}`);
+  // Use a clean UUID filename so demucs doesn't fail on special characters
+  const safeInputName = uuidv4();
+  const inputExt = path.extname(inputPath);
+  const safeInputPath = path.join(tmpDir, `${safeInputName}${inputExt}`);
+
+  try {
+    await fs.mkdir(tmpDir, { recursive: true });
+    await fs.copyFile(inputPath, safeInputPath);
+
+    await execAsync(
+      `python3 -m demucs --two-stems=vocals --mp3 --mp3-bitrate 192 -o "${tmpDir}" "${safeInputPath}"`,
+      { maxBuffer: 200 * 1024 * 1024, timeout: 900000 }
+    );
+
+    const vocalsPath = path.join(tmpDir, 'htdemucs', safeInputName, 'vocals.mp3');
+    await fs.copyFile(vocalsPath, outputPath);
+  } catch (err: unknown) {
+    const msg = (err as Error & { stderr?: string }).stderr || (err as Error).message || '';
+    if (msg.includes('No module named demucs') || msg.includes('demucs')) {
+      throw new Error('Demucs non installé. Installez-le avec: pip install demucs');
+    }
+    throw err;
+  } finally {
+    try { await fs.rm(tmpDir, { recursive: true, force: true }); } catch {}
+  }
+}
+
+export async function signPdf(
+  pdfBuffer: Buffer,
+  signatureBuffer: Buffer,
+  pageNumber: number,
+  x: number,
+  y: number,
+  widthPercent: number
+): Promise<Buffer> {
+  const pdfDoc = await PDFDocument.load(pdfBuffer);
+  const page = pdfDoc.getPage(pageNumber - 1);
+  const { width: pageWidth, height: pageHeight } = page.getSize();
+
+  const metadata = await sharp(signatureBuffer).metadata();
+  const sigAspect = (metadata.height ?? 100) / (metadata.width ?? 100);
+
+  let sigPng = signatureBuffer;
+  if (metadata.format !== 'png') {
+    sigPng = await sharp(signatureBuffer).png().toBuffer();
+  }
+
+  const sigImage = await pdfDoc.embedPng(sigPng);
+  const sigWidthPdf = widthPercent * pageWidth;
+  const sigHeightPdf = sigWidthPdf * sigAspect;
+  const pdfX = x * pageWidth;
+  // PDF y-axis is from bottom; y param is from top
+  const pdfY = pageHeight - (y * pageHeight) - sigHeightPdf;
+
+  page.drawImage(sigImage, { x: pdfX, y: pdfY, width: sigWidthPdf, height: sigHeightPdf });
+
+  return Buffer.from(await pdfDoc.save());
 }
 
 export async function generateQRCode(
