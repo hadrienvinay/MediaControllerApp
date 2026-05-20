@@ -42,6 +42,19 @@ export async function convertImagesToPdf(
   return Buffer.from(pdfBytes);
 }
 
+export async function compressPdf(inputPath: string, outputPath: string, compressionPercent: number): Promise<void> {
+  // Map compression % to image DPI: 0% = 300 DPI (high quality), 100% = 36 DPI (max compression)
+  const dpi = Math.round(300 - (compressionPercent / 100) * 264);
+  await execAsync(
+    `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dBATCH \
+     -dColorImageResolution=${dpi} -dGrayImageResolution=${dpi} -dMonoImageResolution=${dpi} \
+     -dColorImageDownsampleType=/Bicubic -dGrayImageDownsampleType=/Bicubic \
+     -dDownsampleColorImages=true -dDownsampleGrayImages=true \
+     -sOutputFile="${outputPath}" "${inputPath}"`,
+    { maxBuffer: 100 * 1024 * 1024 }
+  );
+}
+
 export async function mergePdfs(files: Buffer[]): Promise<Buffer> {
   const mergedDoc = await PDFDocument.create();
 

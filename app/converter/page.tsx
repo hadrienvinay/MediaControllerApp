@@ -19,8 +19,9 @@ import YoutubeToMp3Form from '../components/YoutubeToMp3Form';
 import QrCodeForm from '../components/QrCodeForm';
 import SignPdfForm from '../components/SignPdfForm';
 import VoiceIsolateForm from '../components/VoiceIsolateForm';
+import CompressPdfForm from '../components/CompressPdfForm';
 
-type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code' | 'sign-pdf' | 'voice-isolate';
+type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code' | 'sign-pdf' | 'voice-isolate' | 'compress-pdf';
 
 const tabs: { key: Tab; label: string }[] = [
   { key: 'audio', label: 'Audio converti' },
@@ -38,6 +39,7 @@ const tabs: { key: Tab; label: string }[] = [
   { key: 'qr-code', label: 'QR Code' },
   { key: 'sign-pdf', label: 'Signer PDF' },
   { key: 'voice-isolate', label: 'Isoler la voix' },
+  { key: 'compress-pdf', label: 'Compresser PDF' },
 ];
 
 const getTabIcon = (key: Tab) => {
@@ -115,6 +117,11 @@ const getTabIcon = (key: Tab) => {
     'voice-isolate': (
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+      </svg>
+    ),
+    'compress-pdf': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2H4a1 1 0 110-2V4zm5 9a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13z" clipRule="evenodd" />
       </svg>
     ),
   };
@@ -645,6 +652,15 @@ export default function ConverterPage() {
           <h2 className="text-2xl font-bold">Isoler la voix</h2>
           <div className="bg-gray-800 rounded-lg p-6">
             <VoiceIsolateForm onConversionDone={fetchFileConversions} />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'compress-pdf' && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Compresser un PDF</h2>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <CompressPdfForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}

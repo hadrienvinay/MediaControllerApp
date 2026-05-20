@@ -12,7 +12,8 @@ export type ConversionType =
   | 'audio-trim'
   | 'qr-code'
   | 'sign-pdf'
-  | 'voice-isolate';
+  | 'voice-isolate'
+  | 'compress-pdf';
 
 export interface FileConversion {
   id: string;

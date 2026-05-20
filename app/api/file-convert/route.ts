@@ -17,6 +17,7 @@ import {
   generateQRCode,
   signPdf,
   isolateVoice,
+  compressPdf,
 } from '@/lib/file-converter';
 import { getFileConversions, createFileConversion, deleteFileConversion } from '@/lib/file-conversion-storage';
 import { ConversionType } from '@/types/file-conversion';
@@ -344,6 +345,41 @@ export async function POST(request: NextRequest) {
         inputFilenames: fileNames,
         outputFilename,
         outputFormat: 'gif',
+        fileSize: stat.size,
+      });
+
+      return NextResponse.json({
+        success: true,
+        conversion,
+        downloadUrl: `/converted/${outputFilename}`,
+      });
+    }
+
+    // PDF compression
+    if (type === 'compress-pdf') {
+      const compressionPercent = Math.min(100, Math.max(0, parseInt(formData.get('compressionPercent') as string) || 50));
+
+      const inputExt = '.pdf';
+      const inputFilename = `input-${uuidv4()}${inputExt}`;
+      const inputPath = path.join(CONVERTED_DIR, inputFilename);
+      await fs.writeFile(inputPath, fileBuffers[0]);
+
+      const outputFilename = `${uuidv4()}.pdf`;
+      const outputPath = path.join(CONVERTED_DIR, outputFilename);
+
+      try {
+        await compressPdf(inputPath, outputPath, compressionPercent);
+      } finally {
+        try { await fs.unlink(inputPath); } catch {}
+      }
+
+      const stat = await fs.stat(outputPath);
+      const conversion = await createFileConversion({
+        type,
+        title: `PDF compressé (${compressionPercent}%)`,
+        inputFilenames: fileNames,
+        outputFilename,
+        outputFormat: 'pdf',
         fileSize: stat.size,
       });
 
