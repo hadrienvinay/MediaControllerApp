@@ -272,9 +272,41 @@ export async function resizeCompressVideo(
   );
 }
 
+async function findDemucsCommand(): Promise<string> {
+  // Try python interpreters that have demucs installed — avoid bare "demucs"
+  // which can resolve to the Node.js demucs package in node_modules.
+  const pythonCandidates = [
+    '/opt/homebrew/bin/python3',
+    '/usr/local/bin/python3',
+    `${process.env.HOME}/.local/bin/python3`,
+    'python3',
+    'python',
+  ];
+  for (const py of pythonCandidates) {
+    try {
+      await execAsync(`${py} -c "import demucs"`, { timeout: 5000 });
+      return `${py} -m demucs`;
+    } catch {}
+  }
+  // Absolute paths for pip-installed demucs scripts (outside node_modules)
+  const scriptCandidates = [
+    '/opt/homebrew/bin/demucs',
+    '/usr/local/bin/demucs',
+    `${process.env.HOME}/.local/bin/demucs`,
+  ];
+  for (const cmd of scriptCandidates) {
+    try {
+      await execAsync(`${cmd} --help`, { timeout: 5000 });
+      return cmd;
+    } catch {}
+  }
+  throw new Error('Demucs non installé. Installez-le avec: pip install demucs');
+}
+
 export async function isolateVoice(inputPath: string, outputPath: string): Promise<void> {
+  const demucsCmd = await findDemucsCommand();
+
   const tmpDir = path.join(path.dirname(outputPath), `demucs-${uuidv4()}`);
-  // Use a clean UUID filename so demucs doesn't fail on special characters
   const safeInputName = uuidv4();
   const inputExt = path.extname(inputPath);
   const safeInputPath = path.join(tmpDir, `${safeInputName}${inputExt}`);
@@ -284,18 +316,12 @@ export async function isolateVoice(inputPath: string, outputPath: string): Promi
     await fs.copyFile(inputPath, safeInputPath);
 
     await execAsync(
-      `python3 -m demucs --two-stems=vocals --mp3 --mp3-bitrate 192 -o "${tmpDir}" "${safeInputPath}"`,
+      `${demucsCmd} --two-stems=vocals --mp3 --mp3-bitrate 192 -o "${tmpDir}" "${safeInputPath}"`,
       { maxBuffer: 200 * 1024 * 1024, timeout: 900000 }
     );
 
     const vocalsPath = path.join(tmpDir, 'htdemucs', safeInputName, 'vocals.mp3');
     await fs.copyFile(vocalsPath, outputPath);
-  } catch (err: unknown) {
-    const msg = (err as Error & { stderr?: string }).stderr || (err as Error).message || '';
-    if (msg.includes('No module named demucs') || msg.includes('demucs')) {
-      throw new Error('Demucs non installé. Installez-le avec: pip install demucs');
-    }
-    throw err;
   } finally {
     try { await fs.rm(tmpDir, { recursive: true, force: true }); } catch {}
   }

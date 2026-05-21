@@ -14,6 +14,9 @@
 # production
 /build
 
+#public files dowloaded
+/public
+
 # misc
 .DS_Store
 *.pem

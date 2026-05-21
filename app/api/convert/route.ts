@@ -8,6 +8,16 @@ import { createConvertedFile, getConvertedFiles } from '@/lib/converter';
 
 const execAsync = promisify(exec);
 
+function parseYtdlpError(error: unknown): string {
+  const stderr = (error as { stderr?: string }).stderr || (error as Error).message || '';
+  if (stderr.includes('not available')) return 'Cette vidéo n\'est pas disponible (privée, supprimée ou restreinte géographiquement).';
+  if (stderr.includes('Private video')) return 'Cette vidéo est privée.';
+  if (stderr.includes('age')) return 'Cette vidéo est restreinte par l\'âge.';
+  if (stderr.includes('copyright')) return 'Cette vidéo a été retirée pour droits d\'auteur.';
+  if (stderr.includes('not found') || stderr.includes('No such')) return 'yt-dlp n\'est pas installé. Installez-le avec : pip install yt-dlp';
+  return `Erreur lors du téléchargement : ${stderr.split('\n').filter(l => l.includes('ERROR')).pop() || 'erreur inconnue'}`;
+}
+
 export async function GET() {
   try {
     const convertedFiles = await getConvertedFiles();
@@ -65,9 +75,7 @@ export async function POST(request: NextRequest) {
       await execAsync(command, { maxBuffer: 100 * 1024 * 1024 });
     } catch (error) {
       console.error('Erreur yt-dlp:', error);
-      return NextResponse.json({
-        error: 'Erreur lors du téléchargement. Assurez-vous que yt-dlp est installé (pip install yt-dlp)'
-      }, { status: 500 });
+      return NextResponse.json({ error: parseYtdlpError(error) }, { status: 500 });
     }
 
     await createConvertedFile({

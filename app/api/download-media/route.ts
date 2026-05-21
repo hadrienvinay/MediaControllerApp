@@ -7,6 +7,16 @@ import { getVideoProjectById, updateVideoProject } from '@/lib/video-storage';
 import { MediaItem } from '@/types/video';
 import { generateThumbnail, getVideoDuration } from '@/lib/video-compiler';
 
+function parseYtdlpError(error: unknown): string {
+  const stderr = (error as { stderr?: string }).stderr || (error as Error).message || '';
+  if (stderr.includes('not available')) return 'Cette vidéo n\'est pas disponible (privée, supprimée ou restreinte géographiquement).';
+  if (stderr.includes('Private video')) return 'Cette vidéo est privée.';
+  if (stderr.includes('age')) return 'Cette vidéo est restreinte par l\'âge.';
+  if (stderr.includes('copyright')) return 'Cette vidéo a été retirée pour droits d\'auteur.';
+  if (stderr.includes('not found') || stderr.includes('No such')) return 'yt-dlp n\'est pas installé. Installez-le avec : pip install yt-dlp';
+  return `Erreur lors du téléchargement : ${stderr.split('\n').filter(l => l.includes('ERROR')).pop() || 'erreur inconnue'}`;
+}
+
 const execAsync = promisify(exec);
 
 export async function POST(request: NextRequest) {
@@ -53,7 +63,7 @@ export async function POST(request: NextRequest) {
         console.error('Erreur yt-dlp:', error);
         return NextResponse.json(
           {
-            error: 'Erreur lors du téléchargement. Assurez-vous que yt-dlp est installé',
+            error: parseYtdlpError(error),
           },
           { status: 500 }
         );
