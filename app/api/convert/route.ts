@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     const isVideo = format === 'mp4';
-    const ext = isVideo ? 'mp4' : 'mp3';
+    const ext = isVideo ? 'mp4' : format === 'flac' ? 'flac' : 'mp3';
     const outputDir = isVideo
       ? path.join(process.cwd(), 'public', 'videos', 'converted')
       : path.join(process.cwd(), 'public', 'audio', 'converted');
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     const command = isVideo
       ? `yt-dlp -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --merge-output-format mp4 -o "${outputPath}" "${url}"`
-      : `yt-dlp -x --audio-format mp3 -o "${outputPath}" "${url}"`;
+      : `yt-dlp -x --audio-format ${ext} -o "${outputPath}" "${url}"`;
 
     const runCommand = async (cmd: string) => {
       const { stdout } = await execAsync(cmd);

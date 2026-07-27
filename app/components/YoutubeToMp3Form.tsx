@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 export default function YoutubeToMp3Form() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [format, setFormat] = useState<'mp3' | 'mp4'>('mp3');
+  const [format, setFormat] = useState<'mp3' | 'flac' | 'mp4'>('mp3');
   const router = useRouter();
 
   const isYoutubeUrl = /youtube\.com|youtu\.be/i.test(youtubeUrl);
@@ -61,6 +61,17 @@ export default function YoutubeToMp3Form() {
             />
             <span className="text-sm font-medium">MP3 (audio)</span>
           </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="format"
+              value="flac"
+              checked={format === 'flac'}
+              onChange={() => setFormat('flac')}
+              className="accent-blue-500"
+            />
+            <span className="text-sm font-medium">FLAC (haute qualité)</span>
+          </label>
           <label className={`flex items-center gap-2 ${isYoutubeUrl ? 'cursor-pointer' : 'cursor-not-allowed opacity-40'}`}>
             <input
               type="radio"
@@ -88,7 +99,9 @@ export default function YoutubeToMp3Form() {
             ? 'Conversion...'
             : format === 'mp4'
               ? 'Convertir en MP4 (vidéo)'
-              : 'Convertir en MP3 (audio)'}
+              : format === 'flac'
+                ? 'Convertir en FLAC (audio)'
+                : 'Convertir en MP3 (audio)'}
         </button>
       </form>
     </div>

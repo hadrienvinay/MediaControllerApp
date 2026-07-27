@@ -20,8 +20,10 @@ import QrCodeForm from '../components/QrCodeForm';
 import SignPdfForm from '../components/SignPdfForm';
 import VoiceIsolateForm from '../components/VoiceIsolateForm';
 import CompressPdfForm from '../components/CompressPdfForm';
+import CodeConverterForm from '../components/CodeConverterForm';
+import CryptoToolsForm from '../components/CryptoToolsForm';
 
-type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code' | 'sign-pdf' | 'voice-isolate' | 'compress-pdf';
+type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code' | 'sign-pdf' | 'voice-isolate' | 'compress-pdf' | 'code-convert' | 'crypto';
 
 const tabs: { key: Tab; label: string }[] = [
   { key: 'audio', label: 'Audio converti' },
@@ -40,6 +42,8 @@ const tabs: { key: Tab; label: string }[] = [
   { key: 'sign-pdf', label: 'Signer PDF' },
   { key: 'voice-isolate', label: 'Isoler la voix' },
   { key: 'compress-pdf', label: 'Compresser PDF' },
+  { key: 'code-convert', label: 'Convertir code' },
+  { key: 'crypto', label: 'Cryptage' },
 ];
 
 const getTabIcon = (key: Tab) => {
@@ -122,6 +126,16 @@ const getTabIcon = (key: Tab) => {
     'compress-pdf': (
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2H4a1 1 0 110-2V4zm5 9a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13z" clipRule="evenodd" />
+      </svg>
+    ),
+    'code-convert': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+      </svg>
+    ),
+    'crypto': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
       </svg>
     ),
   };
@@ -661,6 +675,30 @@ export default function ConverterPage() {
           <h2 className="text-2xl font-bold">Compresser un PDF</h2>
           <div className="bg-gray-800 rounded-lg p-6">
             <CompressPdfForm onConversionDone={fetchFileConversions} />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'code-convert' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">Convertisseur de code</h2>
+            <p className="text-gray-400 text-sm mt-1">Traduit votre code d'un langage vers un autre via Claude AI.</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <CodeConverterForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'crypto' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">Outils de cryptage</h2>
+            <p className="text-gray-400 text-sm mt-1">Hachage (MD5, SHA-256…), encodage (Base64, Hex…), HMAC et bcrypt.</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <CryptoToolsForm />
           </div>
         </div>
       )}
