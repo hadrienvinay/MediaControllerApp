@@ -22,8 +22,15 @@ import VoiceIsolateForm from '../components/VoiceIsolateForm';
 import CompressPdfForm from '../components/CompressPdfForm';
 import CodeConverterForm from '../components/CodeConverterForm';
 import CryptoToolsForm from '../components/CryptoToolsForm';
+import JsonYamlForm from '../components/JsonYamlForm';
+import JwtDecoderForm from '../components/JwtDecoderForm';
+import SubtitlesForm from '../components/SubtitlesForm';
+import UrlShortenerForm from '../components/UrlShortenerForm';
+import BgRemoveForm from '../components/BgRemoveForm';
+import TranscribeForm from '../components/TranscribeForm';
+import PdfToWordForm from '../components/PdfToWordForm';
 
-type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code' | 'sign-pdf' | 'voice-isolate' | 'compress-pdf' | 'code-convert' | 'crypto';
+type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code' | 'sign-pdf' | 'voice-isolate' | 'compress-pdf' | 'code-convert' | 'crypto' | 'json-yaml' | 'jwt' | 'subtitles' | 'url-shorten' | 'bg-remove' | 'transcribe' | 'pdf-to-word';
 
 const tabs: { key: Tab; label: string }[] = [
   { key: 'audio', label: 'Audio converti' },
@@ -44,6 +51,13 @@ const tabs: { key: Tab; label: string }[] = [
   { key: 'compress-pdf', label: 'Compresser PDF' },
   { key: 'code-convert', label: 'Convertir code' },
   { key: 'crypto', label: 'Cryptage' },
+  { key: 'json-yaml', label: 'JSON ↔ YAML' },
+  { key: 'jwt', label: 'JWT Decoder' },
+  { key: 'subtitles', label: 'Sous-titres YT' },
+  { key: 'url-shorten', label: 'Raccourcir URL' },
+  { key: 'bg-remove', label: 'Suppr. fond' },
+  { key: 'transcribe', label: 'Transcription' },
+  { key: 'pdf-to-word', label: 'PDF → Word/Excel' },
 ];
 
 const getTabIcon = (key: Tab) => {
@@ -136,6 +150,41 @@ const getTabIcon = (key: Tab) => {
     'crypto': (
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+      </svg>
+    ),
+    'json-yaml': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm0 6a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+      </svg>
+    ),
+    'jwt': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 3a1 1 0 011 1v3.586l2.707 2.707a1 1 0 01-1.414 1.414l-3-3A1 1 0 019 10V6a1 1 0 011-1z" clipRule="evenodd" />
+      </svg>
+    ),
+    'subtitles': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3 5a1 1 0 000 2h6a1 1 0 100-2H5zm0 3a1 1 0 100 2h4a1 1 0 100-2H5z" clipRule="evenodd" />
+      </svg>
+    ),
+    'url-shorten': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+      </svg>
+    ),
+    'bg-remove': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
+      </svg>
+    ),
+    'transcribe': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+      </svg>
+    ),
+    'pdf-to-word': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H7z" clipRule="evenodd" />
       </svg>
     ),
   };
@@ -699,6 +748,90 @@ export default function ConverterPage() {
           </div>
           <div className="bg-gray-800 rounded-lg p-6">
             <CryptoToolsForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'json-yaml' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">JSON ↔ YAML</h2>
+            <p className="text-gray-400 text-sm mt-1">Convertissez vos fichiers de configuration entre JSON et YAML.</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <JsonYamlForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'jwt' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">JWT Decoder</h2>
+            <p className="text-gray-400 text-sm mt-1">Décodez et inspectez un token JWT (header, payload, expiration).</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <JwtDecoderForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'subtitles' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">Sous-titres YouTube</h2>
+            <p className="text-gray-400 text-sm mt-1">Extrayez les sous-titres d'une vidéo YouTube en .srt ou .vtt.</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <SubtitlesForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'url-shorten' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">Raccourcisseur d'URL</h2>
+            <p className="text-gray-400 text-sm mt-1">Créez des liens courts qui redirigent vers vos URLs longues.</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <UrlShortenerForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'bg-remove' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">Suppression de fond</h2>
+            <p className="text-gray-400 text-sm mt-1">Supprimez l'arrière-plan d'une image automatiquement.</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <BgRemoveForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'transcribe' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">Transcription audio</h2>
+            <p className="text-gray-400 text-sm mt-1">Convertissez un fichier audio ou vidéo en texte via Whisper.</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <TranscribeForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'pdf-to-word' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">PDF → Word / Excel</h2>
+            <p className="text-gray-400 text-sm mt-1">Extrayez le texte d'un PDF vers un document Word (.docx) ou Excel (.xlsx).</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <PdfToWordForm />
           </div>
         </div>
       )}

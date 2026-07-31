@@ -1,6 +1,6 @@
 # Media Controller
 
-Une application Next.js full-stack pour créer et gérer des **playlists audio**, des **projets vidéo** avec transitions professionnelles, et un **convertisseur universel de fichiers multimédia**.
+Une application Next.js full-stack pour créer et gérer des **playlists audio**, des **projets vidéo** avec transitions professionnelles, et un **convertisseur universel** couvrant multimédia, PDF, images, IA, cryptographie et outils développeur.
 
 ## Cas d'utilisation
 
@@ -21,6 +21,16 @@ Une application Next.js full-stack pour créer et gérer des **playlists audio**
 | Générer un QR code PNG ou SVG | Convertisseur → QR Code |
 | Signer un PDF avec une image de signature | Convertisseur → Signer PDF |
 | Isoler la voix humaine d'une chanson ou d'une vidéo | Convertisseur → Isoler la voix |
+| Compresser un PDF | Convertisseur → Compresser PDF |
+| Convertir du code entre langages (Python → TS, etc.) | Convertisseur → Convertir code |
+| Hacher un texte (SHA-256, bcrypt…) ou encoder en Base64 | Convertisseur → Cryptage |
+| Convertir JSON ↔ YAML | Convertisseur → JSON ↔ YAML |
+| Décoder et inspecter un token JWT | Convertisseur → JWT Decoder |
+| Extraire les sous-titres d'une vidéo YouTube | Convertisseur → Sous-titres YT |
+| Raccourcir une URL longue | Convertisseur → Raccourcir URL |
+| Supprimer l'arrière-plan d'une image | Convertisseur → Supprimer fond |
+| Transcrire un fichier audio en texte (Whisper) | Convertisseur → Transcription |
+| Extraire le texte d'un PDF vers Word ou Excel | Convertisseur → PDF → Word/Excel |
 
 ## Fonctionnalités
 
@@ -39,14 +49,31 @@ Une application Next.js full-stack pour créer et gérer des **playlists audio**
 - Lecteur vidéo intégré
 
 ### Convertisseur universel
-- Images → PDF, Fusionner PDFs, Découper PDF, PDF → Images
-- Convertir image (PNG / JPEG / WebP / ICO favicon)
-- Compresser image, Vidéo → GIF, HTML/URL → PDF
-- Vidéo → Audio (MP3, WAV, AAC), Redimensionner vidéo
+
+**Multimédia**
+- Images → PDF, Fusionner PDFs, Découper PDF, PDF → Images, Compresser PDF
+- Convertir image (PNG / JPEG / WebP / ICO favicon), Compresser image
+- Vidéo → GIF, Vidéo → Audio (MP3, WAV, AAC), Redimensionner vidéo
 - Découper audio avec sliders dual-range
-- Générateur QR Code (PNG / SVG)
+- HTML/URL → PDF, Générateur QR Code (PNG / SVG)
 - Signature PDF par glisser-déposer
-- Isolation vocale par IA (Demucs — sépare voix et musique)
+- Isolation vocale par IA (Demucs)
+
+**IA & traitement automatique**
+- Convertisseur de code entre langages via Claude AI (Python, TypeScript, Go, Rust, SQL…)
+- Transcription audio/vidéo → texte via Whisper (formats txt, srt, vtt)
+- Suppression d'arrière-plan d'image via rembg (IA locale)
+- Extraction de sous-titres YouTube (SRT / VTT, multilingue)
+
+**PDF avancé**
+- PDF → Word (.docx) : extraction de texte en document Word structuré
+- PDF → Excel (.xlsx) : extraction de texte ligne par ligne
+
+**Outils développeur**
+- Cryptage : hachage (MD5, SHA-256, SHA-512), encodage (Base64, Hex, URL), HMAC, bcrypt
+- JWT Decoder : décodage et inspection de tokens JWT (header, payload, expiration)
+- JSON ↔ YAML : conversion bidirectionnelle de formats de configuration
+- Raccourcisseur d'URL : liens courts avec compteur de clics et historique
 
 ## Installation locale
 
@@ -55,8 +82,23 @@ Une application Next.js full-stack pour créer et gérer des **playlists audio**
 - Node.js 20+
 - Python 3.10+
 - ffmpeg
-- yt-dlp (`pip install yt-dlp`)
-- demucs (`pip install demucs`) — requis pour l'isolation vocale
+- yt-dlp : `brew install yt-dlp` ou `pip3 install yt-dlp`
+- demucs (isolation vocale) : `pip3 install demucs`
+- rembg (suppression de fond) : `pip3 install "rembg[cpu]"`
+- whisper (transcription) : `pip3 install openai-whisper`
+
+> Les outils Python marqués sont optionnels — les onglets correspondants affichent un message d'installation si la commande est absente.
+
+### Variables d'environnement
+
+Créez un fichier `.env.local` à la racine :
+
+```env
+# Requis pour le convertisseur de code (onglet "Convertir code")
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Obtenez une clé API sur [console.anthropic.com](https://console.anthropic.com). Les autres outils fonctionnent sans clé.
 
 ### Démarrage
 
@@ -183,26 +225,52 @@ MediaControllerApp/
 
 ## Technologies
 
+### Stack principale
+
 | Outil | Rôle |
 |---|---|
-| Next.js 15 | Framework React (App Router, Server Actions) |
+| Next.js 15 | Framework React (App Router) |
 | TypeScript | Typage statique |
 | Tailwind CSS | Styles |
-| ffmpeg | Conversion et manipulation audio/vidéo |
-| yt-dlp | Téléchargement YouTube / SoundCloud |
-| pdf-lib | Manipulation PDF (fusion, découpe, signature) |
-| mupdf | Rendu PDF → images (WASM) |
-| sharp | Traitement d'images |
-| puppeteer | HTML/URL → PDF (Chromium headless) |
-| qrcode | Génération de QR codes |
-| Demucs | Isolation vocale par réseau neuronal (Meta) |
+| React 19 | UI |
+
+### Dépendances npm
+
+| Package | Rôle |
+|---|---|
+| `fluent-ffmpeg` | Conversion et manipulation audio/vidéo |
+| `pdf-lib` | Manipulation PDF (fusion, découpe, signature) |
+| `mupdf` | Rendu PDF → images (WebAssembly) |
+| `sharp` | Traitement et compression d'images |
+| `puppeteer` | HTML/URL → PDF (Chromium headless) |
+| `qrcode` | Génération de QR codes PNG / SVG |
+| `docx` | Génération de fichiers Word (.docx) |
+| `xlsx` | Génération de fichiers Excel (.xlsx) |
+| `pdf-parse` | Extraction de texte depuis un PDF |
+| `js-yaml` | Conversion JSON ↔ YAML |
+| `bcryptjs` | Hachage bcrypt (outil cryptage) |
+| `@anthropic-ai/sdk` | API Claude AI (convertisseur de code) |
+| `uuid` | Génération d'identifiants uniques |
+| `formidable` | Gestion des uploads multipart |
+| `demucs` (npm wrapper) | Isolation vocale |
+
+### Outils système (CLI)
+
+| Outil | Rôle | Installation |
+|---|---|---|
+| `ffmpeg` | Encodage audio/vidéo | `brew install ffmpeg` |
+| `yt-dlp` | Téléchargement YouTube/SoundCloud | `brew install yt-dlp` |
+| `whisper` | Transcription audio → texte (OpenAI) | `pip3 install openai-whisper` |
+| `rembg` | Suppression de fond d'image (IA) | `pip3 install "rembg[cpu]"` |
+| `demucs` | Séparation voix/musique (Meta) | `pip3 install demucs` |
 
 ## Dépannage
 
 **`yt-dlp` introuvable**
 ```bash
 yt-dlp --version
-# Si absent : pip install yt-dlp
+# macOS : brew install yt-dlp
+# Mise à jour : yt-dlp -U
 ```
 
 **ffmpeg manquant**
@@ -214,8 +282,23 @@ ffmpeg -version
 
 **Demucs non installé**
 ```bash
-pip install demucs
+pip3 install demucs
 ```
+
+**rembg — "No onnxruntime backend found"**
+```bash
+pip3 install "rembg[cpu]"
+# Ne pas faire : pip3 install rembg (sans [cpu])
+```
+
+**Whisper non installé**
+```bash
+pip3 install openai-whisper
+whisper --help  # vérification
+```
+
+**Convertisseur de code ne fonctionne pas**  
+Vérifiez que `ANTHROPIC_API_KEY` est défini dans `.env.local` et que la clé est valide sur [console.anthropic.com](https://console.anthropic.com).
 
 **Puppeteer échoue dans Docker**  
 Vérifiez que `PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium` est défini (déjà configuré dans le Dockerfile).
