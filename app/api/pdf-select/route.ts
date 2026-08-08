@@ -4,9 +4,6 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
-
 const OUTPUT_DIR = path.join(process.cwd(), 'public', 'converted');
 
 /** Parse a page selection string like "1, 3-5, 8" into sorted unique 1-indexed page numbers */
@@ -42,6 +39,11 @@ export async function POST(request: NextRequest) {
   // ── Count pages only ──────────────────────────────────────────────────────
   if (operation === 'count') {
     try {
+      // Import différé : évite l'évaluation de pdf-parse (et de sa dépendance
+      // pdfjs-dist référençant des APIs canvas navigateur) pendant la collecte
+      // de config des routes au build.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const pdfParse = require('pdf-parse');
       const data = await pdfParse(buffer);
       return NextResponse.json({ pageCount: data.numpages });
     } catch {

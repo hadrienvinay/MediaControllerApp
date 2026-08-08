@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
-const SUPPORTED_LANGUAGES = [
-  'javascript', 'typescript', 'python', 'java', 'c', 'cpp', 'csharp',
-  'go', 'rust', 'php', 'ruby', 'swift', 'kotlin', 'scala', 'r',
-  'bash', 'sql', 'html', 'css', 'json', 'yaml', 'xml',
-];
-
 export async function POST(request: NextRequest) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || apiKey === 'sk-ant-VOTRE_CLE_ICI') {
@@ -63,5 +57,3 @@ ${code}`;
     outputTokens: message.usage.output_tokens,
   });
 }
-
-export { SUPPORTED_LANGUAGES };

@@ -5,12 +5,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { Document, Packer, Paragraph, HeadingLevel } from 'docx';
 import * as XLSX from 'xlsx';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
-
 const OUTPUT_DIR = path.join(process.cwd(), 'public', 'converted');
 
 async function extractText(buffer: Buffer): Promise<string[]> {
+  // Import différé : évite l'évaluation de pdf-parse (et de sa dépendance
+  // pdfjs-dist référençant des APIs canvas navigateur) pendant la collecte
+  // de config des routes au build.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pdfParse = require('pdf-parse');
   const data = await pdfParse(buffer);
   return (data.text as string)
     .split('\n')

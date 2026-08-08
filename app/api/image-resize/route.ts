@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import sharp from 'sharp';
+import sharp, { FitEnum } from 'sharp';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
   const widthRaw = formData.get('width') as string | null;
   const heightRaw = formData.get('height') as string | null;
-  const fit = (formData.get('fit') as sharp.FitEnum[keyof sharp.FitEnum]) || 'inside';
+  const fit = (formData.get('fit') as keyof FitEnum) || 'inside';
   const format = (formData.get('format') as 'jpeg' | 'png' | 'webp') || 'jpeg';
   const quality = Math.min(100, Math.max(10, parseInt((formData.get('quality') as string) || '85')));
 

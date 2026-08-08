@@ -153,7 +153,7 @@ export async function compressImage(
 
   let pipeline = sharp(file);
 
-  if (format === 'jpeg' || format === 'jpg') {
+  if (format === 'jpeg') {
     pipeline = pipeline.jpeg({ quality, mozjpeg: true });
   } else if (format === 'png') {
     pipeline = pipeline.png({ quality, compressionLevel: 9 });

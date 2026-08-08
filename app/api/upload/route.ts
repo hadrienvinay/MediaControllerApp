@@ -62,10 +62,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erreur lors de l\'upload' }, { status: 500 });
   }
 }
-
-// Désactiver le body parser par défaut de Next.js pour gérer les fichiers
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
