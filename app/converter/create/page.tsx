@@ -20,7 +20,7 @@ function ConverterCreateContent() {
   const title = parsedMetadata?.title || 'Fichier Converti';
   const duration = parsedMetadata?.duration || '';
   const thumbnail = parsedMetadata?.thumbnail || '';
-  const mediaPath = `/${fileDir}/${audioFile}`;
+  const mediaPath = `/${fileDir}/${encodeURIComponent(audioFile ?? '')}`;
   const isVideo = fileFormat === 'mp4';
 
   // Trim state

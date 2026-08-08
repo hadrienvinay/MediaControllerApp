@@ -221,8 +221,16 @@ export async function POST(request: NextRequest) {
 
       if (existingFile) {
         // Use a file already on the server (e.g. from YouTube conversion)
-        // Validate filename to prevent path traversal: must be uuid.ext pattern
-        if (!/^[a-f0-9-]+\.\w+$/.test(existingFile)) {
+        // Validate filename to prevent path traversal:
+        // - no directory separators or null bytes
+        // - must have an extension
+        if (
+          existingFile.includes('/') ||
+          existingFile.includes('\\') ||
+          existingFile.includes('\0') ||
+          existingFile.includes('..') ||
+          !/\.\w+$/.test(existingFile)
+        ) {
           return NextResponse.json({ error: 'Nom de fichier invalide' }, { status: 400 });
         }
         // Check in both converted/ and audio/converted/ directories

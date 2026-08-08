@@ -2,8 +2,9 @@ export interface ConvertedItem {
   id: string;
   title: string;
   filename: string;
-  duration?: string; // Pour vidéos et durée d'affichage des images
+  displayName?: string; // "Artist - Title.ext" suggested download filename
+  duration?: string;
   source: 'upload' | 'youtube' | 'url';
-  thumbnail?: string; // Miniature pour les vidéos
+  thumbnail?: string;
   createdAt: Date;
 }

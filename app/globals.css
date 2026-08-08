@@ -3,25 +3,48 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg:       #0d1117;
+  --surface:  #161b22;
+  --surface2: #1c2128;
+  --border:   #21262d;
+  --border2:  #2f3640;
+  --text:     #e6edf3;
+  --muted:    #8b949e;
+  --faint:    #484f58;
+  --accent:   #39d0cf;
+  --accent-bg: rgba(57, 208, 207, 0.07);
+  --accent-border: rgba(57, 208, 207, 0.25);
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+* { box-sizing: border-box; }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--faint); }
+
+/* Selection */
+::selection { background: var(--accent-bg); color: var(--accent); }
+
+/* Focus ring */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Mono utility */
+.font-mono { font-family: var(--font-mono) !important; }
+
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
+  .text-accent  { color: var(--accent); }
+  .bg-surface   { background: var(--surface); }
+  .bg-surface2  { background: var(--surface2); }
+  .border-app   { border-color: var(--border); }
 }

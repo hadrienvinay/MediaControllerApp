@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { VideoProject } from '@/types/video';
 
+const M = { fontFamily: 'var(--font-mono)' } as const;
+
 export default function VideosPage() {
   const [projects, setProjects] = useState<VideoProject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,14 +29,12 @@ export default function VideosPage() {
 
   const handleCompile = async (projectId: string) => {
     setCompilingProjectId(projectId);
-
     try {
       const response = await fetch('/api/compile-video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projectId }),
       });
-
       if (!response.ok) {
         const error = await response.json();
         alert(`Erreur: ${error.error}`);
@@ -58,158 +58,157 @@ export default function VideosPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl">Chargement...</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <span style={{ ...M, fontSize: '.75rem', color: 'var(--faint)', letterSpacing: '.08em' }}>CHARGEMENT…</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-bold">Mes Projets Vidéo</h1>
-        <Link
-          href="/videos/create"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition"
-        >
-          + Nouveau Projet
+    <div style={{ maxWidth: 860, margin: '0 auto', padding: '2rem 1.5rem 5rem' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1.25rem' }}>
+        <div>
+          <p style={{ ...M, fontSize: '.6rem', letterSpacing: '.14em', color: 'var(--faint)', textTransform: 'uppercase', marginBottom: '.35rem' }}>
+            Vidéos
+          </p>
+          <h1 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '-.02em' }}>
+            Mes Projets Vidéo
+          </h1>
+        </div>
+        <Link href="/videos/create" style={{
+          ...M, fontSize: '.72rem', letterSpacing: '.04em',
+          background: 'var(--accent-bg)', color: 'var(--accent)',
+          border: '1px solid var(--accent-border)',
+          padding: '.4rem 1rem', borderRadius: 4, textDecoration: 'none',
+        }}>
+          + Nouveau projet
         </Link>
       </div>
 
       {projects.length === 0 ? (
-        <div className="text-center py-20 bg-gray-100 dark:bg-gray-800 rounded-lg">
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-4">
-            Aucun projet vidéo pour le moment
-          </p>
-          <Link
-            href="/videos/create"
-            className="text-blue-600 hover:text-blue-700 font-semibold"
-          >
+        <div style={{ padding: '3rem', textAlign: 'center', border: '1px dashed var(--border)', borderRadius: 6 }}>
+          <p style={{ ...M, fontSize: '.78rem', color: 'var(--faint)', marginBottom: '1rem' }}>Aucun projet vidéo pour le moment</p>
+          <Link href="/videos/create" style={{ ...M, fontSize: '.72rem', color: 'var(--accent)', textDecoration: 'none' }}>
             Créez votre premier projet →
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-8">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {projects.map((project) => (
             <div
               key={project.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, padding: '1.25rem 1.5rem' }}
             >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold mb-2">{project.name}</h2>
+              {/* Card header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h2 style={{ fontSize: '.92rem', fontWeight: 600, color: 'var(--text)', marginBottom: '.3rem' }}>
+                    {project.name}
+                  </h2>
                   {project.description && (
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    <p style={{ fontSize: '.78rem', color: 'var(--muted)', marginBottom: '.5rem' }}>
                       {project.description}
                     </p>
                   )}
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span>🎬 {project.media.length} élément{project.media.length > 1 ? 's' : ''}</span>
-                    <span>📅 {new Date(project.createdAt).toLocaleDateString('fr-FR')}</span>
-                    {project.compiledDuration && (
-                      <span>⏱️ {formatDuration(project.compiledDuration)}</span>
-                    )}
-                    <span>📐 {project.settings.resolution || '1080p'}</span>
+                  <div style={{ display: 'flex', gap: '1rem', ...M, fontSize: '.7rem', color: 'var(--faint)' }}>
+                    <span>{project.media.length} élément{project.media.length > 1 ? 's' : ''}</span>
+                    <span>{new Date(project.createdAt).toLocaleDateString('fr-FR')}</span>
+                    {project.compiledDuration && <span>{formatDuration(project.compiledDuration)}</span>}
+                    <span>{project.settings.resolution || '1080p'}</span>
                   </div>
                 </div>
 
-                {/* Boutons d'action */}
-                <div className="flex gap-2">
-                  <a
-                    href={`/videos/edit/${project.id}`}
-                    className="bg-orange-400 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition"
-                  >
-                    ✏️ Modifier
+                <div style={{ display: 'flex', gap: '.5rem', marginLeft: '1rem', flexShrink: 0 }}>
+                  <a href={`/videos/edit/${project.id}`} style={{
+                    ...M, fontSize: '.7rem', letterSpacing: '.03em',
+                    background: 'var(--surface2)', color: 'var(--muted)',
+                    border: '1px solid var(--border2)',
+                    padding: '.35rem .85rem', borderRadius: 4, textDecoration: 'none',
+                  }}>
+                    Modifier
                   </a>
 
                   {project.isCompiling || compilingProjectId === project.id ? (
-                    <button
-                      disabled
-                      className="bg-gray-400 text-white px-6 py-2 rounded-lg cursor-not-allowed"
-                    >
-                      🎬 Compilation en cours...
+                    <button disabled style={{
+                      ...M, fontSize: '.7rem', letterSpacing: '.03em',
+                      background: 'var(--surface2)', color: 'var(--faint)',
+                      border: '1px solid var(--border)', cursor: 'not-allowed',
+                      padding: '.35rem .85rem', borderRadius: 4,
+                    }}>
+                      Compilation…
                     </button>
                   ) : project.compiledVideo ? (
-                    <button
-                      onClick={() => handleCompile(project.id)}
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition"
-                    >
-                      🔄 Re-compiler
+                    <button onClick={() => handleCompile(project.id)} style={{
+                      ...M, fontSize: '.7rem', letterSpacing: '.03em',
+                      background: 'var(--accent-bg)', color: 'var(--accent)',
+                      border: '1px solid var(--accent-border)',
+                      padding: '.35rem .85rem', borderRadius: 4, cursor: 'pointer',
+                    }}>
+                      Re-compiler
                     </button>
                   ) : (
-                    <button
-                      onClick={() => handleCompile(project.id)}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition"
-                    >
-                      🎬 Compiler la Vidéo
+                    <button onClick={() => handleCompile(project.id)} style={{
+                      ...M, fontSize: '.7rem', letterSpacing: '.03em',
+                      background: 'var(--accent-bg)', color: 'var(--accent)',
+                      border: '1px solid var(--accent-border)',
+                      padding: '.35rem .85rem', borderRadius: 4, cursor: 'pointer',
+                    }}>
+                      Compiler
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* Afficher l'erreur si compilation échouée */}
+              {/* Error */}
               {project.compileError && (
-                <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-4">
-                  <p className="font-bold">Erreur lors de la compilation :</p>
-                  <p className="text-sm">{project.compileError}</p>
+                <div style={{ background: 'rgba(248,81,73,.08)', border: '1px solid rgba(248,81,73,.3)', borderRadius: 4, padding: '.75rem 1rem', marginBottom: '1rem' }}>
+                  <p style={{ ...M, fontSize: '.7rem', color: '#f85149', fontWeight: 600 }}>Erreur compilation</p>
+                  <p style={{ fontSize: '.75rem', color: '#f85149', opacity: .8, marginTop: '.25rem' }}>{project.compileError}</p>
                 </div>
               )}
 
-              {/* Lecteur vidéo si la compilation existe */}
+              {/* Video player */}
               {project.compiledVideo && !project.isCompiling && (
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-6 rounded-lg mb-4">
-                  <div className="flex items-center gap-4 mb-3">
-                    <span className="text-white font-bold text-lg">🎥 Vidéo Finale</span>
-                    <span className="text-white/80 text-sm">
-                      {formatDuration(project.compiledDuration)}
-                    </span>
+                <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 4, padding: '1rem', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.75rem' }}>
+                    <span style={{ ...M, fontSize: '.65rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--accent)' }}>Vidéo finale</span>
+                    <span style={{ ...M, fontSize: '.65rem', color: 'var(--faint)' }}>{formatDuration(project.compiledDuration)}</span>
                   </div>
-                  <video
-                    controls
-                    className="w-full rounded-lg"
-                    preload="metadata"
-                  >
+                  <video controls className="w-full" style={{ borderRadius: 4 }} preload="metadata">
                     <source src={`/videos/${project.compiledVideo}`} type="video/mp4" />
-                    Votre navigateur ne supporte pas la lecture vidéo.
                   </video>
-                  <div className="mt-2 text-white/70 text-xs">
-                    ✨ Transitions {project.settings.transitionType || 'fade'} de {project.settings.transitionDuration || 1}s
-                    {' • '}Images affichées {project.settings.imageDuration || 5}s
-                  </div>
+                  <p style={{ ...M, fontSize: '.6rem', color: 'var(--faint)', marginTop: '.5rem' }}>
+                    Transitions {project.settings.transitionType || 'fade'} {project.settings.transitionDuration || 1}s
+                    {' · '}Images {project.settings.imageDuration || 5}s
+                  </p>
                 </div>
               )}
 
-              {/* Liste des médias */}
+              {/* Media grid */}
               {project.media.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300">
-                    Éléments du projet :
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p style={{ ...M, fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: '.6rem' }}>
+                    Éléments
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '.5rem' }}>
                     {project.media.map((item, index) => (
                       <div
                         key={item.id}
-                        className="relative bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden aspect-video"
+                        style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', aspectRatio: '16/9', background: 'var(--bg)', border: '1px solid var(--border)' }}
                       >
                         {item.type === 'image' ? (
-                          <img
-                            src={`/images/${item.filename}`}
-                            alt={item.title}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={`/images/${item.filename}`} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
-                          <img
-                            src={'/thumbnails/'+item.thumbnail} 
-                            alt={item.title}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={'/thumbnails/' + item.thumbnail} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2">
-                          <p className="text-xs truncate font-medium">
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,.7)', padding: '.3rem .4rem' }}>
+                          <p style={{ ...M, fontSize: '.6rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {index + 1}. {item.title}
                           </p>
-                          <p className="text-xs text-gray-300">
-                            {item.type === 'image' ? '📷 Image' : '🎬 Vidéo'}
+                          <p style={{ ...M, fontSize: '.58rem', color: 'var(--faint)' }}>
+                            {item.type === 'image' ? 'IMG' : 'VID'}
                           </p>
                         </div>
                       </div>

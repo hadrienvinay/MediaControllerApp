@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import yaml from 'js-yaml';
+import { dump, load } from 'js-yaml';
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -10,10 +10,10 @@ export async function POST(request: NextRequest) {
   try {
     if (direction === 'json-to-yaml') {
       const parsed = JSON.parse(input);
-      const result = yaml.dump(parsed, { indent: 2, lineWidth: -1 });
+      const result = dump(parsed, { indent: 2, lineWidth: -1 });
       return NextResponse.json({ result });
     } else {
-      const parsed = yaml.load(input);
+      const parsed = load(input);
       const result = JSON.stringify(parsed, null, 2);
       return NextResponse.json({ result });
     }

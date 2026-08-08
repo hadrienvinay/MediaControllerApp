@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ConvertedItem } from '@/types/converted';
 import { FileConversion } from '@/types/file-conversion';
-import Link from 'next/link';
 import ImageToPdfForm from '../components/ImageToPdfForm';
 import MergePdfsForm from '../components/MergePdfsForm';
 import ImageConvertForm from '../components/ImageConvertForm';
@@ -29,35 +28,51 @@ import UrlShortenerForm from '../components/UrlShortenerForm';
 import BgRemoveForm from '../components/BgRemoveForm';
 import TranscribeForm from '../components/TranscribeForm';
 import PdfToWordForm from '../components/PdfToWordForm';
+import PdfPageSelectForm from '../components/PdfPageSelectForm';
+import PdfFillForm from '../components/PdfFillForm';
+import CsvJsonForm from '../components/CsvJsonForm';
+import ImageResizeForm from '../components/ImageResizeForm';
+import DrumMachineForm from '../components/DrumMachineForm';
 
-type Tab = 'audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code' | 'sign-pdf' | 'voice-isolate' | 'compress-pdf' | 'code-convert' | 'crypto' | 'json-yaml' | 'jwt' | 'subtitles' | 'url-shorten' | 'bg-remove' | 'transcribe' | 'pdf-to-word';
+type Tab ='audio' | 'images-to-pdf' | 'merge-pdfs' | 'image-convert' | 'pdf-to-images' | 'split-pdf' | 'compress-image' | 'video-to-gif' | 'html-to-pdf' | 'video-to-audio' | 'video-resize' | 'audio-trim' | 'qr-code' | 'sign-pdf' | 'voice-isolate' | 'compress-pdf' | 'code-convert' | 'crypto' | 'json-yaml' | 'jwt' | 'subtitles' | 'url-shorten' | 'bg-remove' | 'transcribe' | 'pdf-to-word' | 'pdf-select' | 'pdf-fill' | 'csv-json' | 'image-resize' | 'drum-machine';
 
-const tabs: { key: Tab; label: string }[] = [
-  { key: 'audio', label: 'Audio converti' },
-  { key: 'images-to-pdf', label: 'Images → PDF' },
-  { key: 'pdf-to-images', label: 'PDF → Images' },
-  { key: 'merge-pdfs', label: 'Fusionner PDFs' },
-  { key: 'split-pdf', label: 'Découper PDF' },
-  { key: 'html-to-pdf', label: 'HTML/URL → PDF' },
-  { key: 'image-convert', label: 'Convertir image' },
-  { key: 'compress-image', label: 'Compresser image' },
-  { key: 'video-to-gif', label: 'Vidéo → GIF' },
-  { key: 'video-to-audio', label: 'Vidéo → Audio' },
-  { key: 'video-resize', label: 'Redimensionner vidéo' },
-  { key: 'audio-trim', label: 'Découper audio' },
-  { key: 'qr-code', label: 'QR Code' },
-  { key: 'sign-pdf', label: 'Signer PDF' },
-  { key: 'voice-isolate', label: 'Isoler la voix' },
-  { key: 'compress-pdf', label: 'Compresser PDF' },
-  { key: 'code-convert', label: 'Convertir code' },
-  { key: 'crypto', label: 'Cryptage' },
-  { key: 'json-yaml', label: 'JSON ↔ YAML' },
-  { key: 'jwt', label: 'JWT Decoder' },
-  { key: 'subtitles', label: 'Sous-titres YT' },
-  { key: 'url-shorten', label: 'Raccourcir URL' },
-  { key: 'bg-remove', label: 'Suppr. fond' },
-  { key: 'transcribe', label: 'Transcription' },
-  { key: 'pdf-to-word', label: 'PDF → Word/Excel' },
+const tabs: { key: Tab; label: string; group: string }[] = [
+  // ── PDF ──────────────────────────────────────────────────────────────────
+  { key: 'images-to-pdf',  label: 'Images → PDF',          group: 'PDF' },
+  { key: 'pdf-to-images',  label: 'PDF → Images',          group: 'PDF' },
+  { key: 'merge-pdfs',     label: 'Fusionner PDFs',        group: 'PDF' },
+  { key: 'split-pdf',      label: 'Découper PDF',          group: 'PDF' },
+  { key: 'compress-pdf',   label: 'Compresser PDF',        group: 'PDF' },
+  { key: 'pdf-select',     label: 'Sélection pages PDF',   group: 'PDF' },
+  { key: 'sign-pdf',       label: 'Signer PDF',            group: 'PDF' },
+  { key: 'pdf-fill',       label: 'Remplir PDF',           group: 'PDF' },
+  { key: 'pdf-to-word',    label: 'PDF → Word/Excel',      group: 'PDF' },
+  { key: 'html-to-pdf',    label: 'HTML/URL → PDF',        group: 'PDF' },
+  // ── Image ─────────────────────────────────────────────────────────────────
+  { key: 'image-convert',  label: 'Convertir image',       group: 'Image' },
+  { key: 'compress-image', label: 'Compresser image',      group: 'Image' },
+  { key: 'bg-remove',      label: 'Suppr. fond',           group: 'Image' },
+  { key: 'video-to-gif',   label: 'Vidéo → GIF',           group: 'Image' },
+  { key: 'qr-code',        label: 'QR Code',               group: 'Image' },
+  // ── Audio / Vidéo ─────────────────────────────────────────────────────────
+  { key: 'audio',          label: 'Audio converti',        group: 'Audio / Vidéo' },
+  { key: 'audio-trim',     label: 'Découper audio',        group: 'Audio / Vidéo' },
+  { key: 'transcribe',     label: 'Transcription',         group: 'Audio / Vidéo' },
+  { key: 'voice-isolate',  label: 'Isoler la voix',        group: 'Audio / Vidéo' },
+  { key: 'video-to-audio', label: 'Vidéo → Audio',         group: 'Audio / Vidéo' },
+  { key: 'video-resize',   label: 'Redimensionner vidéo',  group: 'Audio / Vidéo' },
+  { key: 'subtitles',      label: 'Sous-titres YT',        group: 'Audio / Vidéo' },
+  // ── Dev / IA ──────────────────────────────────────────────────────────────
+  { key: 'code-convert',   label: 'Convertir code',        group: 'Dev / IA' },
+  { key: 'crypto',         label: 'Cryptage',              group: 'Dev / IA' },
+  { key: 'json-yaml',      label: 'JSON ↔ YAML',           group: 'Dev / IA' },
+  { key: 'csv-json',       label: 'CSV ↔ JSON',            group: 'Dev / IA' },
+  { key: 'jwt',            label: 'JWT Decoder',           group: 'Dev / IA' },
+  { key: 'url-shorten',    label: 'Raccourcir URL',        group: 'Dev / IA' },
+  // ── Image (suite) ─────────────────────────────────────────────────────────
+  { key: 'image-resize',   label: 'Redimensionner image',  group: 'Image' },
+  // ── Sons ──────────────────────────────────────────────────────────────────
+  { key: 'drum-machine',   label: 'Boîte à rythme',        group: 'Sons' },
 ];
 
 const getTabIcon = (key: Tab) => {
@@ -185,6 +200,31 @@ const getTabIcon = (key: Tab) => {
     'pdf-to-word': (
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H7z" clipRule="evenodd" />
+      </svg>
+    ),
+    'pdf-select': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M3 4a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 100 2h6a1 1 0 100-2H3z" clipRule="evenodd" />
+      </svg>
+    ),
+    'pdf-fill': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+      </svg>
+    ),
+    'csv-json': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M3 4a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 000 2h6a1 1 0 100-2H3zm0 4a1 1 0 100 2h6a1 1 0 100-2H3zm10-4a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1zm1 3a1 1 0 100 2h2a1 1 0 100-2h-2z" clipRule="evenodd" />
+      </svg>
+    ),
+    'image-resize': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 110-2h4a1 1 0 011 1v4a1 1 0 11-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 112 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 15H8a1 1 0 110 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 110-2h1.586l-2.293-2.293a1 1 0 011.414-1.414L15 13.586V12a1 1 0 011-1z" clipRule="evenodd" />
+      </svg>
+    ),
+    'drum-machine': (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M10 2a6 6 0 00-6 6v1.5a1 1 0 00.4.8L5 11v4a2 2 0 002 2h6a2 2 0 002-2v-4l.6-.7a1 1 0 00.4-.8V8a6 6 0 00-6-6zm-2 9a1 1 0 112 0 1 1 0 01-2 0zm4 0a1 1 0 112 0 1 1 0 01-2 0z" clipRule="evenodd" />
       </svg>
     ),
   };
@@ -329,139 +369,216 @@ export default function ConverterPage() {
     return c.type === activeTab;
   });
 
+  const activeTabMeta = tabs.find(t => t.key === activeTab);
+  const groups = Array.from(new Set(tabs.map(t => t.group)));
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl">Chargement...</div>
+      <div style={{ height: 'calc(100vh - 48px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.75rem', color: 'var(--faint)', letterSpacing: '.1em' }}>
+          CHARGEMENT…
+        </span>
       </div>
     );
   }
 
+  /* ── Rail + Panel shell ── */
   return (
-    <div className="space-y-12">
-      {/* Header */}
-      <div className="space-y-4">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-          Convertisseur Universel
-        </h1>
-        <p className="text-gray-400 text-lg max-w-2xl">
-          Convertissez vos fichiers audio, vidéo, images, PDF, QR codes et bien plus.
-        </p>
-      </div>
+    <div style={{ display: 'flex', height: 'calc(100vh - 48px - 57px)' }}>
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {tabs.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`group relative px-3 py-4 rounded-xl font-semibold text-sm transition-all duration-200 flex flex-col items-center gap-2 ${
-              activeTab === tab.key
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-600/50'
-                : 'bg-gray-800/50 border border-gray-700/50 text-gray-300 hover:bg-gray-800 hover:border-blue-500/50'
-            }`}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl opacity-0 group-hover:opacity-100 blur transition -z-10" />
-            <div className={`text-xl transition-transform group-hover:scale-110 ${activeTab === tab.key ? 'text-white' : 'text-gray-400'}`}>
-              {getTabIcon(tab.key)}
+      {/* ── Left rail ── */}
+      <aside style={{
+        width: 208,
+        flexShrink: 0,
+        background: 'var(--bg)',
+        borderRight: '1px solid var(--border)',
+        overflowY: 'auto',
+        paddingTop: '1rem',
+        paddingBottom: '2rem',
+      }}>
+        {groups.map(group => (
+          <div key={group}>
+            {/* Group label */}
+            <div style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '.58rem',
+              letterSpacing: '.14em',
+              textTransform: 'uppercase',
+              color: 'var(--faint)',
+              padding: '.9rem 1rem .35rem',
+            }}>
+              {group}
             </div>
-            <span className="text-center text-xs sm:text-sm leading-tight">{tab.label}</span>
-          </button>
+            {/* Items */}
+            {tabs.filter(t => t.group === group).map(tab => {
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '.6rem',
+                    width: '100%',
+                    padding: '.38rem 1rem',
+                    background: isActive ? 'var(--accent-bg)' : 'transparent',
+                    borderTop: 'none',
+                    borderRight: 'none',
+                    borderBottom: 'none',
+                    borderLeft: `2px solid ${isActive ? 'var(--accent)' : 'transparent'}`,
+                    color: isActive ? 'var(--accent)' : 'var(--muted)',
+                    fontSize: '.78rem',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    transition: 'color .1s, background .1s',
+                  }}
+                  onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = 'var(--text)'; (e.currentTarget as HTMLElement).style.background = 'var(--surface)'; } }}
+                  onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.color = 'var(--muted)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; } }}
+                >
+                  <span style={{ width: 14, height: 14, flexShrink: 0, opacity: isActive ? 1 : .55 }}>
+                    {getTabIcon(tab.key)}
+                  </span>
+                  <span style={{ lineHeight: 1.3 }}>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
         ))}
-      </div>
+      </aside>
+
+      {/* ── Right panel ── */}
+      <div style={{ flex: 1, overflowY: 'auto', background: 'var(--bg)' }}>
+
+        {/* Panel header bar */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '.6rem 1.5rem',
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--surface)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+        }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.72rem', color: 'var(--text)', letterSpacing: '.01em' }}>
+            {activeTabMeta?.group}{' '}
+            <span style={{ color: 'var(--faint)' }}>/</span>{' '}
+            <span style={{ color: 'var(--accent)' }}>{activeTabMeta?.label}</span>
+          </span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '.62rem', color: 'var(--faint)', letterSpacing: '.06em' }}>
+            {tabs.length} OUTILS
+          </span>
+        </div>
+
+        {/* Panel content */}
+        <div style={{ padding: '1.5rem' }}>
 
       {/* Tab Content */}
       {activeTab === 'audio' && (
-        <div className="space-y-8">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* YouTube / SoundCloud conversion form */}
-          <div className="rounded-2xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-orange-500/30 p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <svg className="w-8 h-8 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm4 2v4h8V8H6z" />
-              </svg>
-              <h2 className="text-2xl font-bold">Convertir depuis YouTube / SoundCloud</h2>
-            </div>
-            <div className="bg-gray-900/50 rounded-xl p-6">
-              <YoutubeToMp3Form />
-            </div>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, padding: '1.25rem 1.5rem' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: '1rem' }}>
+              YouTube / SoundCloud
+            </p>
+            <YoutubeToMp3Form />
           </div>
 
-          <h2 className="text-2xl font-bold">Mes Fichiers audio convertis</h2>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--faint)' }}>
+            Fichiers convertis
+          </p>
 
           {convertedFiles.length === 0 ? (
-            <div className="text-center py-20 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <p className="text-xl text-gray-600 dark:text-gray-400 mb-4">
-                Aucune conversion réalisée pour le moment
-              </p>
-              <Link
-                href="/"
-                className="text-blue-600 hover:text-blue-700 font-semibold"
-              >
-                Retourner à l'accueil pour vos conversions
-              </Link>
+            <div style={{ padding: '2.5rem', textAlign: 'center', border: '1px dashed var(--border)', borderRadius: 6 }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.78rem', color: 'var(--faint)' }}>Aucune conversion pour le moment</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-8">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
               {convertedFiles.map(converted => (
                 <div
                   key={converted.id}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, padding: '1rem 1.25rem' }}
                 >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <h2 className="text-2xl font-bold mb-2">{converted.title}</h2>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span>
-                          {new Date(converted.createdAt).toLocaleDateString('fr-FR')}
-                        </span>
-                        <span>{converted.duration} minutes</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: trimmingFileId === converted.id ? '1rem' : 0 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--text)', marginBottom: '.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {converted.title}
+                      </p>
+                      <div style={{ display: 'flex', gap: '.75rem', fontFamily: 'var(--font-mono)', fontSize: '.68rem', color: 'var(--faint)' }}>
+                        <span>{new Date(converted.createdAt).toLocaleDateString('fr-FR')}</span>
+                        <span>{converted.duration} min</span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div style={{ display: 'flex', gap: '.4rem', marginLeft: '1rem', flexShrink: 0 }}>
                       <button
                         onClick={() => openTrimmer(converted.id)}
-                        className={`px-4 py-2 rounded-lg font-semibold transition ${
-                          trimmingFileId === converted.id
-                            ? 'bg-blue-700 text-white'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
-                        }`}
+                        style={{
+                          fontFamily: 'var(--font-mono)', fontSize: '.68rem', letterSpacing: '.03em',
+                          background: trimmingFileId === converted.id ? 'var(--accent-bg)' : 'var(--surface2)',
+                          color: trimmingFileId === converted.id ? 'var(--accent)' : 'var(--muted)',
+                          border: trimmingFileId === converted.id ? '1px solid var(--accent-border)' : '1px solid var(--border2)',
+                          padding: '.3rem .75rem', borderRadius: 4, cursor: 'pointer',
+                        }}
                       >
-                        ✂ Découper
+                        Découper
                       </button>
                       <a
-                        href={'/audio/converted/' + converted.filename}
-                        download
-                        className="bg-green-400 text-white px-6 py-2 rounded-lg cursor-pointer"
+                        href={'/audio/converted/' + encodeURIComponent(converted.filename)}
+                        download={converted.displayName ?? converted.filename}
+                        style={{
+                          fontFamily: 'var(--font-mono)', fontSize: '.68rem', letterSpacing: '.03em',
+                          background: 'var(--surface2)', color: 'var(--muted)',
+                          border: '1px solid var(--border2)',
+                          padding: '.3rem .75rem', borderRadius: 4, textDecoration: 'none', cursor: 'pointer',
+                        }}
                       >
                         Télécharger
                       </a>
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`Supprimer "${converted.title}" ?`)) return;
+                          await fetch(`/api/convert?id=${converted.id}`, { method: 'DELETE' });
+                          fetchConvertedFiles();
+                        }}
+                        style={{
+                          fontFamily: 'var(--font-mono)', fontSize: '.68rem',
+                          background: 'rgba(248,81,73,.07)', color: '#f85149',
+                          border: '1px solid rgba(248,81,73,.25)',
+                          padding: '.3rem .6rem', borderRadius: 4, cursor: 'pointer',
+                        }}
+                        title="Supprimer"
+                      >
+                        ✕
+                      </button>
                     </div>
                   </div>
 
                   {/* Inline trimmer */}
                   {trimmingFileId === converted.id && (
-                    <div className="mt-4 space-y-4 bg-gray-700/50 rounded-lg p-4">
+                    <div style={{ marginTop: '1rem', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 4, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
                       <audio
                         ref={trimAudioRef}
                         controls
-                        src={'/audio/converted/' + converted.filename}
+                        src={'/audio/converted/' + encodeURIComponent(converted.filename)}
                         onLoadedMetadata={handleTrimLoadedMetadata}
-                        className="w-full mb-2"
+                        className="w-full"
                       />
 
                       {trimDuration > 0 && (
                         <>
-                          <div className="flex justify-between text-xs text-gray-500 font-mono">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: '.65rem', color: 'var(--faint)' }}>
                             <span>0:00.0</span>
                             <span>{formatTime(trimDuration)}</span>
                           </div>
 
                           {/* Dual-range slider */}
                           <div className="relative h-8 select-none">
-                            <div className="absolute inset-x-0 top-3 h-2 bg-gray-600 rounded-full" />
+                            <div className="absolute inset-x-0 top-3 h-2 rounded-full" style={{ background: 'var(--border2)' }} />
                             <div
-                              className="absolute top-3 h-2 bg-blue-500 rounded-full pointer-events-none"
-                              style={{ left: `${trimLeftPct}%`, right: `${trimRightPct}%` }}
+                              className="absolute top-3 h-2 rounded-full pointer-events-none"
+                              style={{ left: `${trimLeftPct}%`, right: `${trimRightPct}%`, background: 'var(--accent)' }}
                             />
                             <input
                               type="range"
@@ -474,7 +591,7 @@ export default function ConverterPage() {
                                 if (v < trimEnd - 0.1) setTrimStart(v);
                               }}
                               style={{ zIndex: trimStartOnTop ? 4 : 3 }}
-                              className="absolute inset-x-0 top-0 w-full h-8 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-400 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-400 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:cursor-grab"
+                              className="absolute inset-x-0 top-0 w-full h-8 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--accent)] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--bg)] [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[var(--accent)] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-[var(--bg)] [&::-moz-range-thumb]:cursor-grab"
                             />
                             <input
                               type="range"
@@ -487,36 +604,28 @@ export default function ConverterPage() {
                                 if (v > trimStart + 0.1) setTrimEnd(v);
                               }}
                               style={{ zIndex: trimStartOnTop ? 3 : 4 }}
-                              className="absolute inset-x-0 top-0 w-full h-8 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-green-400 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-green-400 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:cursor-grab"
+                              className="absolute inset-x-0 top-0 w-full h-8 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--muted)] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--bg)] [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[var(--muted)] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-[var(--bg)] [&::-moz-range-thumb]:cursor-grab"
                             />
                           </div>
 
                           {/* Time display */}
-                          <div className="grid grid-cols-3 gap-2 text-sm text-center">
-                            <div className="bg-gray-700 rounded p-2">
-                              <p className="text-xs text-gray-400 mb-1 flex items-center justify-center gap-1">
-                                <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />
-                                Début
-                              </p>
-                              <p className="font-mono text-blue-300 font-semibold">{formatTime(trimStart)}</p>
-                            </div>
-                            <div className="bg-gray-700 rounded p-2">
-                              <p className="text-xs text-gray-400 mb-1">Durée</p>
-                              <p className="font-mono text-white font-semibold">{formatTime(trimEnd - trimStart)}</p>
-                            </div>
-                            <div className="bg-gray-700 rounded p-2">
-                              <p className="text-xs text-gray-400 mb-1 flex items-center justify-center gap-1">
-                                Fin
-                                <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
-                              </p>
-                              <p className="font-mono text-green-300 font-semibold">{formatTime(trimEnd)}</p>
-                            </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '.5rem' }}>
+                            {[
+                              { label: 'Début', value: formatTime(trimStart), accent: true },
+                              { label: 'Durée', value: formatTime(trimEnd - trimStart), accent: false },
+                              { label: 'Fin', value: formatTime(trimEnd), accent: false },
+                            ].map(({ label, value, accent }) => (
+                              <div key={label} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 4, padding: '.5rem', textAlign: 'center' }}>
+                                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', color: 'var(--faint)', marginBottom: '.25rem' }}>{label}</p>
+                                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.78rem', fontWeight: 600, color: accent ? 'var(--accent)' : 'var(--text)' }}>{value}</p>
+                              </div>
+                            ))}
                           </div>
 
                           {/* Fine-tune inputs */}
-                          <div className="grid grid-cols-2 gap-4">
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">Début (s)</label>
+                              <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '.62rem', color: 'var(--faint)', marginBottom: '.3rem' }}>Début (s)</label>
                               <input
                                 type="number"
                                 min={0}
@@ -527,11 +636,11 @@ export default function ConverterPage() {
                                   const v = parseFloat(e.target.value) || 0;
                                   if (v < trimEnd - 0.1) setTrimStart(v);
                                 }}
-                                className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm font-mono"
+                                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: '.4rem .6rem', color: 'var(--text)', fontFamily: 'var(--font-mono)', fontSize: '.78rem' }}
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">Fin (s)</label>
+                              <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '.62rem', color: 'var(--faint)', marginBottom: '.3rem' }}>Fin (s)</label>
                               <input
                                 type="number"
                                 min={trimStart + 0.1}
@@ -542,41 +651,55 @@ export default function ConverterPage() {
                                   const v = parseFloat(e.target.value) || trimDuration;
                                   if (v > trimStart + 0.1) setTrimEnd(v);
                                 }}
-                                className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm font-mono"
+                                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: '.4rem .6rem', color: 'var(--text)', fontFamily: 'var(--font-mono)', fontSize: '.78rem' }}
                               />
                             </div>
                           </div>
 
                           {/* Action buttons */}
-                          <div className="grid grid-cols-2 gap-4">
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.5rem' }}>
                             <button
                               onClick={isTrimPreviewing ? stopTrimPreview : handleTrimPreview}
-                              className={`py-2 rounded-lg font-semibold transition ${
-                                isTrimPreviewing
-                                  ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                                  : 'bg-gray-600 hover:bg-gray-500 text-white'
-                              }`}
+                              style={{
+                                fontFamily: 'var(--font-mono)', fontSize: '.72rem', letterSpacing: '.03em',
+                                background: isTrimPreviewing ? 'var(--surface)' : 'var(--surface)',
+                                color: isTrimPreviewing ? 'var(--accent)' : 'var(--muted)',
+                                border: isTrimPreviewing ? '1px solid var(--accent-border)' : '1px solid var(--border2)',
+                                padding: '.5rem', borderRadius: 4, cursor: 'pointer',
+                              }}
                             >
-                              {isTrimPreviewing ? '⏹ Arrêter' : '▶ Prévisualiser'}
+                              {isTrimPreviewing ? 'Arrêter' : 'Prévisualiser'}
                             </button>
                             <button
                               onClick={() => handleTrimSubmit(converted.filename)}
                               disabled={isTrimming}
-                              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2 rounded-lg font-semibold transition"
+                              style={{
+                                fontFamily: 'var(--font-mono)', fontSize: '.72rem', letterSpacing: '.03em',
+                                background: 'var(--accent-bg)', color: 'var(--accent)',
+                                border: '1px solid var(--accent-border)',
+                                padding: '.5rem', borderRadius: 4, cursor: isTrimming ? 'not-allowed' : 'pointer',
+                                opacity: isTrimming ? .5 : 1,
+                              }}
                             >
-                              {isTrimming ? 'Découpe...' : '✂ Découper'}
+                              {isTrimming ? 'Découpe…' : 'Découper'}
                             </button>
                           </div>
 
                           {/* Trimmed result */}
                           {trimmedUrl && (
-                            <div className="space-y-3 bg-gray-700/30 rounded-lg p-4">
-                              <p className="text-sm text-green-400 font-semibold">Extrait prêt !</p>
+                            <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 4, padding: '.75rem', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.68rem', color: 'var(--accent)' }}>Extrait prêt</p>
                               <audio controls src={trimmedUrl} className="w-full" />
                               <a
                                 href={trimmedUrl}
                                 download
-                                className="block text-center bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition"
+                                style={{
+                                  display: 'block', textAlign: 'center',
+                                  fontFamily: 'var(--font-mono)', fontSize: '.7rem', letterSpacing: '.03em',
+                                  background: 'var(--surface2)', color: 'var(--muted)',
+                                  border: '1px solid var(--border2)',
+                                  padding: '.4rem', borderRadius: 4, textDecoration: 'none',
+                                }}
                               >
                                 Télécharger l&apos;extrait
                               </a>
@@ -594,317 +717,395 @@ export default function ConverterPage() {
       )}
 
       {activeTab === 'images-to-pdf' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Images vers PDF</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Images vers PDF</h2>
+          <div className="pt-4">
             <ImageToPdfForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'merge-pdfs' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Fusionner des PDFs</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Fusionner des PDFs</h2>
+          <div className="pt-4">
             <MergePdfsForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'image-convert' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Convertir le format d'une image</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Convertir le format d'une image</h2>
+          <div className="pt-4">
             <ImageConvertForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'pdf-to-images' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">PDF vers Images</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>PDF vers Images</h2>
+          <div className="pt-4">
             <PdfToImagesForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'split-pdf' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Découper un PDF</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Découper un PDF</h2>
+          <div className="pt-4">
             <SplitPdfForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'compress-image' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Compresser une image</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Compresser une image</h2>
+          <div className="pt-4">
             <CompressImageForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'video-to-gif' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Vidéo vers GIF</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Vidéo vers GIF</h2>
+          <div className="pt-4">
             <VideoToGifForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'html-to-pdf' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">HTML / URL vers PDF</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>HTML / URL vers PDF</h2>
+          <div className="pt-4">
             <HtmlToPdfForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'video-to-audio' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Extraire l'audio d'une vidéo</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Extraire l'audio d'une vidéo</h2>
+          <div className="pt-4">
             <VideoToAudioForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'video-resize' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Redimensionner / Compresser une vidéo</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Redimensionner / Compresser une vidéo</h2>
+          <div className="pt-4">
             <VideoResizeForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'audio-trim' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Découper un fichier audio</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Découper un fichier audio</h2>
+          <div className="pt-4">
             <AudioTrimForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'qr-code' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Générateur de QR Code</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Générateur de QR Code</h2>
+          <div className="pt-4">
             <QrCodeForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'sign-pdf' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Signer un PDF</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Signer un PDF</h2>
+          <div className="pt-4">
             <SignPdfForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'voice-isolate' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Isoler la voix</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Isoler la voix</h2>
+          <div className="pt-4">
             <VoiceIsolateForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'compress-pdf' && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">Compresser un PDF</h2>
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className="space-y-4">
+          <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Compresser un PDF</h2>
+          <div className="pt-4">
             <CompressPdfForm onConversionDone={fetchFileConversions} />
           </div>
         </div>
       )}
 
       {activeTab === 'code-convert' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold">Convertisseur de code</h2>
-            <p className="text-gray-400 text-sm mt-1">Traduit votre code d'un langage vers un autre via Claude AI.</p>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Convertisseur de code</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Traduit votre code d'un langage vers un autre via Claude AI.</p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="pt-4">
             <CodeConverterForm />
           </div>
         </div>
       )}
 
       {activeTab === 'crypto' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold">Outils de cryptage</h2>
-            <p className="text-gray-400 text-sm mt-1">Hachage (MD5, SHA-256…), encodage (Base64, Hex…), HMAC et bcrypt.</p>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Outils de cryptage</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Hachage (MD5, SHA-256…), encodage (Base64, Hex…), HMAC et bcrypt.</p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="pt-4">
             <CryptoToolsForm />
           </div>
         </div>
       )}
 
       {activeTab === 'json-yaml' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold">JSON ↔ YAML</h2>
-            <p className="text-gray-400 text-sm mt-1">Convertissez vos fichiers de configuration entre JSON et YAML.</p>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>JSON ↔ YAML</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Convertissez vos fichiers de configuration entre JSON et YAML.</p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="pt-4">
             <JsonYamlForm />
           </div>
         </div>
       )}
 
       {activeTab === 'jwt' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold">JWT Decoder</h2>
-            <p className="text-gray-400 text-sm mt-1">Décodez et inspectez un token JWT (header, payload, expiration).</p>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>JWT Decoder</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Décodez et inspectez un token JWT (header, payload, expiration).</p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="pt-4">
             <JwtDecoderForm />
           </div>
         </div>
       )}
 
       {activeTab === 'subtitles' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold">Sous-titres YouTube</h2>
-            <p className="text-gray-400 text-sm mt-1">Extrayez les sous-titres d'une vidéo YouTube en .srt ou .vtt.</p>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Sous-titres YouTube</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Extrayez les sous-titres d'une vidéo YouTube en .srt ou .vtt.</p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="pt-4">
             <SubtitlesForm />
           </div>
         </div>
       )}
 
       {activeTab === 'url-shorten' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold">Raccourcisseur d'URL</h2>
-            <p className="text-gray-400 text-sm mt-1">Créez des liens courts qui redirigent vers vos URLs longues.</p>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Raccourcisseur d'URL</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Créez des liens courts qui redirigent vers vos URLs longues.</p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="pt-4">
             <UrlShortenerForm />
           </div>
         </div>
       )}
 
       {activeTab === 'bg-remove' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold">Suppression de fond</h2>
-            <p className="text-gray-400 text-sm mt-1">Supprimez l'arrière-plan d'une image automatiquement.</p>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Suppression de fond</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Supprimez l'arrière-plan d'une image automatiquement.</p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="pt-4">
             <BgRemoveForm />
           </div>
         </div>
       )}
 
       {activeTab === 'transcribe' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold">Transcription audio</h2>
-            <p className="text-gray-400 text-sm mt-1">Convertissez un fichier audio ou vidéo en texte via Whisper.</p>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Transcription audio</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Convertissez un fichier audio ou vidéo en texte via Whisper.</p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="pt-4">
             <TranscribeForm />
           </div>
         </div>
       )}
 
       {activeTab === 'pdf-to-word' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold">PDF → Word / Excel</h2>
-            <p className="text-gray-400 text-sm mt-1">Extrayez le texte d'un PDF vers un document Word (.docx) ou Excel (.xlsx).</p>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>PDF → Word / Excel</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Extrayez le texte d'un PDF vers un document Word (.docx) ou Excel (.xlsx).</p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="pt-4">
             <PdfToWordForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'pdf-select' && (
+        <div className="space-y-4">
+          <div>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Sélection de pages PDF</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Choisissez précisément les pages à extraire depuis un PDF.</p>
+          </div>
+          <div className="pt-4">
+            <PdfPageSelectForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'pdf-fill' && (
+        <div className="space-y-4">
+          <div>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Remplir un PDF</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Ajoutez du texte, des images et des signatures directement sur les pages du PDF.</p>
+          </div>
+          <div className="pt-4">
+            <PdfFillForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'csv-json' && (
+        <div className="space-y-4">
+          <div>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>CSV ↔ JSON</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Convertissez un fichier CSV en JSON ou un tableau JSON en CSV.</p>
+          </div>
+          <div className="pt-4">
+            <CsvJsonForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'image-resize' && (
+        <div className="space-y-4">
+          <div>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Redimensionner une image</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Modifiez la taille d&apos;une image en pixels, avec contrôle du format et de la qualité.</p>
+          </div>
+          <div className="pt-4">
+            <ImageResizeForm />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'drum-machine' && (
+        <div className="space-y-4">
+          <div>
+            <h2 style={{fontSize:".85rem",fontWeight:600,color:"var(--text)",fontFamily:"var(--font-mono)",letterSpacing:"-.01em"}}>Boîte à rythme</h2>
+            <p style={{fontSize:".72rem",color:"var(--muted)",marginTop:".2rem"}}>Synthétisez des kicks, snares, claps et hi-hats façon 808/909, réglables et exportables en WAV pour Ableton.</p>
+          </div>
+          <div className="pt-4">
+            <DrumMachineForm />
           </div>
         </div>
       )}
 
       {/* File conversion history (for non-audio tabs) */}
       {activeTab !== 'audio' && filteredConversions.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold">Historique</h3>
-          <div className="grid grid-cols-1 gap-4">
-            {filteredConversions.map(conversion => (
-              <div
-                key={conversion.id}
-                className="bg-gray-800 rounded-lg p-4 flex items-center justify-between"
-              >
-                <div>
-                  <p className="font-semibold">{conversion.title}</p>
-                  <p className="text-sm text-gray-400">
-                    {new Date(conversion.createdAt).toLocaleDateString('fr-FR')}{' '}
-                    {formatFileSize(conversion.fileSize)}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  {conversion.type === 'qr-code' && (
-                    <button
-                      onClick={() => setPreviewingQrId(conversion.id)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition"
-                    >
-                      Voir
-                    </button>
-                  )}
-                  <a
-                    href={`/converted/${conversion.outputFilename}`}
-                    download
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition"
-                  >
-                    Télécharger
-                  </a>
-                  <button
-                    onClick={() => handleDeleteFileConversion(conversion.id)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition"
-                  >
-                    Supprimer
-                  </button>
+        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--faint)' }}>Historique</p>
+          {filteredConversions.map(conversion => (
+            <div
+              key={conversion.id}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, padding: '.75rem 1rem' }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '.2rem' }}>
+                  {conversion.title}
+                </p>
+                <div style={{ display: 'flex', gap: '.75rem', fontFamily: 'var(--font-mono)', fontSize: '.65rem', color: 'var(--faint)' }}>
+                  <span>{new Date(conversion.createdAt).toLocaleDateString('fr-FR')}</span>
+                  <span>{formatFileSize(conversion.fileSize)}</span>
+                  <span style={{ background: 'var(--surface2)', border: '1px solid var(--border)', padding: '.1rem .4rem', borderRadius: 3 }}>
+                    {conversion.type}
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
+              <div style={{ display: 'flex', gap: '.4rem', flexShrink: 0 }}>
+                {conversion.type === 'qr-code' && (
+                  <button
+                    onClick={() => setPreviewingQrId(conversion.id)}
+                    style={{
+                      fontFamily: 'var(--font-mono)', fontSize: '.68rem', letterSpacing: '.03em',
+                      background: 'var(--surface2)', color: 'var(--muted)',
+                      border: '1px solid var(--border2)',
+                      padding: '.3rem .75rem', borderRadius: 4, cursor: 'pointer',
+                    }}
+                  >
+                    Voir
+                  </button>
+                )}
+                <a
+                  href={`/converted/${conversion.outputFilename}`}
+                  download
+                  style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '.68rem', letterSpacing: '.03em',
+                    background: 'var(--surface2)', color: 'var(--muted)',
+                    border: '1px solid var(--border2)',
+                    padding: '.3rem .75rem', borderRadius: 4, textDecoration: 'none',
+                  }}
+                >
+                  Télécharger
+                </a>
+                <button
+                  onClick={() => handleDeleteFileConversion(conversion.id)}
+                  style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '.68rem',
+                    background: 'rgba(248,81,73,.07)', color: '#f85149',
+                    border: '1px solid rgba(248,81,73,.25)',
+                    padding: '.3rem .6rem', borderRadius: 4, cursor: 'pointer',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* QR Code Preview Modal */}
       {previewingQrId && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setPreviewingQrId(null)}>
-          <div className="bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold">Aperçu QR Code</h3>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.8)', backdropFilter: 'blur(4px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={() => setPreviewingQrId(null)}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', maxWidth: 400, width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.72rem', letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--faint)' }}>Aperçu QR Code</p>
               <button
                 onClick={() => setPreviewingQrId(null)}
-                className="text-gray-400 hover:text-white transition text-2xl"
+                style={{ fontFamily: 'var(--font-mono)', fontSize: '.85rem', color: 'var(--faint)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1 }}
               >
                 ✕
               </button>
             </div>
             {fileConversions.find(c => c.id === previewingQrId) && (
-              <div className="space-y-4">
-                <div className="bg-white p-4 rounded-lg flex items-center justify-center">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+                <div style={{ background: '#fff', padding: '1rem', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <img
                     src={`/converted/${fileConversions.find(c => c.id === previewingQrId)?.outputFilename}`}
                     alt="QR Code Preview"
-                    className="max-w-xs max-h-96"
+                    style={{ maxWidth: 280, maxHeight: 280 }}
                   />
                 </div>
-                <p className="text-sm text-gray-400">
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '.72rem', color: 'var(--faint)' }}>
                   {fileConversions.find(c => c.id === previewingQrId)?.title}
                 </p>
               </div>
@@ -912,6 +1113,9 @@ export default function ConverterPage() {
           </div>
         </div>
       )}
+
+        </div>
+      </div>
     </div>
   );
 }
