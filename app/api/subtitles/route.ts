@@ -5,6 +5,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import os from 'os';
+import { checkYtdlpHealth } from '@/lib/ytdlp';
 
 const execAsync = promisify(exec);
 
@@ -13,6 +14,14 @@ export async function POST(request: NextRequest) {
   const { url, lang = 'en', format = 'vtt' } = body;
 
   if (!url?.trim()) return NextResponse.json({ error: 'URL manquante' }, { status: 400 });
+
+  const ytdlpHealth = await checkYtdlpHealth();
+  if (!ytdlpHealth.ok) {
+    return NextResponse.json({ error: ytdlpHealth.blockingError }, { status: 503 });
+  }
+  if (ytdlpHealth.warning) {
+    console.warn(ytdlpHealth.warning);
+  }
 
   const tmpDir = os.tmpdir();
   const basename = path.join(tmpDir, `subs_${uuidv4()}`);

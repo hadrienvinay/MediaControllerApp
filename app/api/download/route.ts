@@ -5,6 +5,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { getPlaylistById, updatePlaylist } from '@/lib/storage';
 import { Track } from '@/types/playlist';
+import { checkYtdlpHealth } from '@/lib/ytdlp';
 
 function parseYtdlpError(error: unknown): string {
   const stderr = (error as { stderr?: string }).stderr || (error as Error).message || '';
@@ -28,6 +29,14 @@ export async function POST(request: NextRequest) {
 
     if (!url || !playlistId || !title || !source) {
       return NextResponse.json({ error: 'Données manquantes' }, { status: 400 });
+    }
+
+    const ytdlpHealth = await checkYtdlpHealth();
+    if (!ytdlpHealth.ok) {
+      return NextResponse.json({ error: ytdlpHealth.blockingError }, { status: 503 });
+    }
+    if (ytdlpHealth.warning) {
+      console.warn(ytdlpHealth.warning);
     }
 
     // Récupérer la playlist

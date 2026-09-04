@@ -5,6 +5,7 @@ import path from 'path';
 import { promises as fs } from 'fs';
 import { randomUUID } from 'crypto';
 import { createConvertedFile, getConvertedFiles, getConvertedFilebyId, deleteConvertedFile } from '@/lib/converter';
+import { checkYtdlpHealth } from '@/lib/ytdlp';
 
 const execAsync = promisify(exec);
 
@@ -78,6 +79,14 @@ export async function POST(request: NextRequest) {
 
     if (!url) {
       return NextResponse.json({ error: 'URL manquante' }, { status: 400 });
+    }
+
+    const ytdlpHealth = await checkYtdlpHealth();
+    if (!ytdlpHealth.ok) {
+      return NextResponse.json({ error: ytdlpHealth.blockingError }, { status: 503 });
+    }
+    if (ytdlpHealth.warning) {
+      console.warn(ytdlpHealth.warning);
     }
 
     const isVideo = format === 'mp4';
